@@ -1,4 +1,4 @@
-Goal : p4 fowarding with 2 hosts 2 switches
+Goal : packet fowarding with 2 hosts 2 switches
 
 
 

@@ -34,11 +34,11 @@ you get started with P4 programming, organized into several modules:
 ## Installation
 * Install Ubuntu 20.04 
 * Install git & p4-guide
-    ```
+    ```shell
     $ sudo apt-get install git
     $ mkdir p4; cd p4
     $ git clone https://github.com/jafingerhut/p4-guide
-    $ ./p4-guide/bin/install-p4dev-v2.sh |& tee log.txt
+    $ ./p4-guide/bin/install-p4dev-v4.sh |& tee log.txt
     ```
 * wait for 1~2 hours
 

@@ -16,7 +16,7 @@ import re
 import socket
 
 import math
-
+import codecs
 '''
 This package contains several helper functions for encoding to and decoding from byte strings:
 - integers
@@ -29,10 +29,10 @@ def matchesMac(mac_addr_string):
     return mac_pattern.match(mac_addr_string) is not None
 
 def encodeMac(mac_addr_string):
-    return mac_addr_string.replace(':', '').decode('hex')
+    return codecs.decode(mac_addr_string.replace(':', ''), 'hex')
 
 def decodeMac(encoded_mac_addr):
-    return ':'.join(s.encode('hex') for s in encoded_mac_addr)
+    return ':'.join(hex(s)[2:] for s in encoded_mac_addr)
 
 ip_pattern = re.compile('^(\d{1,3}\.){3}(\d{1,3})$')
 def matchesIPv4(ip_addr_string):
@@ -52,10 +52,10 @@ def encodeNum(number, bitwidth):
     num_str = '%x' % number
     if number >= 2 ** bitwidth:
         raise Exception("Number, %d, does not fit in %d bits" % (number, bitwidth))
-    return ('0' * (byte_len * 2 - len(num_str)) + num_str).decode('hex')
+    return codecs.decode(('0' * (byte_len * 2 - len(num_str)) + num_str), 'hex')
 
 def decodeNum(encoded_number):
-    return int(encoded_number.encode('hex'), 16)
+    return int(codecs.encode(encoded_number,'hex').decode('ascii'), 16)
 
 def encode(x, bitwidth):
     'Tries to infer the type of `x` and encode it'
@@ -82,20 +82,20 @@ if __name__ == '__main__':
     # TODO These tests should be moved out of main eventually
     mac = "aa:bb:cc:dd:ee:ff"
     enc_mac = encodeMac(mac)
-    assert(enc_mac == '\xaa\xbb\xcc\xdd\xee\xff')
+    assert(enc_mac == b'\xaa\xbb\xcc\xdd\xee\xff')
     dec_mac = decodeMac(enc_mac)
     assert(mac == dec_mac)
 
     ip = "10.0.0.1"
     enc_ip = encodeIPv4(ip)
-    assert(enc_ip == '\x0a\x00\x00\x01')
+    assert(enc_ip == b'\x0a\x00\x00\x01')
     dec_ip = decodeIPv4(enc_ip)
     assert(ip == dec_ip)
 
     num = 1337
     byte_len = 5
     enc_num = encodeNum(num, byte_len * 8)
-    assert(enc_num == '\x00\x00\x00\x05\x39')
+    assert(enc_num == b'\x00\x00\x00\x05\x39')
     dec_num = decodeNum(enc_num)
     assert(num == dec_num)
 
@@ -116,4 +116,4 @@ if __name__ == '__main__':
         enc_num = encodeNum(num, 8)
         raise Exception("expected exception")
     except Exception as e:
-        print e
+        print(e)

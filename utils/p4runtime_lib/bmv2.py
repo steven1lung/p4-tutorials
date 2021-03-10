@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from switch import SwitchConnection
+from .switch import SwitchConnection
 from p4.tmp import p4config_pb2
+import json
 
 
 def buildDeviceConfig(bmv2_json_file_path=None):
     "Builds the device config for BMv2"
     device_config = p4config_pb2.P4DeviceConfig()
     device_config.reassign = True
-    with open(bmv2_json_file_path) as f:
+    with open(bmv2_json_file_path, 'rb') as f:
         device_config.device_data = f.read()
     return device_config
 

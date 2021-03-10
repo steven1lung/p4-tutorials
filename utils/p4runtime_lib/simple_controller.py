@@ -19,15 +19,16 @@ import json
 import os
 import sys
 
-import bmv2
-import helper
+from . import bmv2
+from . import helper
 
 
 def error(msg):
-    print >> sys.stderr, ' - ERROR! ' + msg
+    print(' - ERROR! ' + msg, file=sys.stderr)
+
 
 def info(msg):
-    print >> sys.stdout, ' - ' + msg
+    print(' - ' + msg, file=sys.stdout)
 
 
 class ConfException(Exception):
@@ -68,7 +69,7 @@ def check_switch_conf(sw_conf, workdir):
     files_to_check = ["p4info"]
     target_choices = ["bmv2"]
 
-    if "target" not in sw_conf:
+    if "target" not in list(sw_conf.keys()):
         raise ConfException("missing key 'target'")
     target = sw_conf['target']
     if target not in target_choices:
@@ -89,7 +90,7 @@ def check_switch_conf(sw_conf, workdir):
 
 
 def program_switch(addr, device_id, sw_conf_file, workdir, proto_dump_fpath):
-    sw_conf = json_load_byteified(sw_conf_file)
+    sw_conf = json.load(sw_conf_file)
     try:
         check_switch_conf(sw_conf=sw_conf, workdir=workdir)
     except ConfException as e:
@@ -148,9 +149,9 @@ def program_switch(addr, device_id, sw_conf_file, workdir, proto_dump_fpath):
 
 def insertTableEntry(sw, flow, p4info_helper):
     table_name = flow['table']
-    match_fields = flow.get('match') # None if not found
+    match_fields = flow.get('match')  # None if not found
     action_name = flow['action_name']
-    default_action = flow.get('default_action') # None if not found
+    default_action = flow.get('default_action')  # None if not found
     action_params = flow['action_params']
     priority = flow.get('priority')  # None if not found
 
@@ -174,7 +175,7 @@ def json_load_byteified(file_handle):
 
 def _byteify(data, ignore_dicts=False):
     # if this is a unicode string, return its string representation
-    if isinstance(data, unicode):
+    if isinstance(data, str):
         return data.encode('utf-8')
     # if this is a list of values, return list of byteified values
     if isinstance(data, list):
@@ -184,7 +185,7 @@ def _byteify(data, ignore_dicts=False):
     if isinstance(data, dict) and not ignore_dicts:
         return {
             _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
-            for key, value in data.iteritems()
+            for key, value in data.items()
         }
     # if it's anything else, return it in its original form
     return data
@@ -212,6 +213,7 @@ def groupEntryToString(rule):
     ports_str = ', '.join(replicas)
     return 'Group {0} => ({1})'.format(group_id, ports_str)
 
+
 def cloneEntryToString(rule):
     clone_id = rule["clone_session_id"]
     if "packet_length_bytes" in rule:
@@ -222,9 +224,12 @@ def cloneEntryToString(rule):
     ports_str = ', '.join(replicas)
     return 'Clone Session {0} => ({1}) ({2})'.format(clone_id, ports_str, packet_length_bytes)
 
+
 def insertMulticastGroupEntry(sw, rule, p4info_helper):
-    mc_entry = p4info_helper.buildMulticastGroupEntry(rule["multicast_group_id"], rule['replicas'])
+    mc_entry = p4info_helper.buildMulticastGroupEntry(
+        rule["multicast_group_id"], rule['replicas'])
     sw.WritePREEntry(mc_entry)
+
 
 def insertCloneGroupEntry(sw, rule, p4info_helper):
     clone_entry = p4info_helper.buildCloneSessionEntry(rule['clone_session_id'], rule['replicas'],

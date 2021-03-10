@@ -16,7 +16,7 @@ def get_if():
             iface = i
             break
     if not iface:
-        print "Cannot find eth0 interface"
+        print("Cannot find eth0 interface")
         exit(1)
     return iface
 

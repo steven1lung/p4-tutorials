@@ -19,7 +19,7 @@ def get_if():
             iface=i
             break;
     if not iface:
-        print "Cannot find eth0 interface"
+        print("Cannot find eth0 interface")
         exit(1)
     return iface
 
@@ -34,20 +34,20 @@ bind_layers(SourceRoute, IP, bos=1)
 def main():
 
     if len(sys.argv)<2:
-        print 'pass 2 arguments: <destination>'
+        print('pass 2 arguments: <destination>')
         exit(1)
 
     addr = socket.gethostbyname(sys.argv[1])
     iface = get_if()
-    print "sending on interface %s to %s" % (iface, str(addr))
+    print("sending on interface %s to %s" % (iface, str(addr)))
 
     while True:
-        print
-        s = str(raw_input('Type space separated port nums '
+        print()
+        s = str(input('Type space separated port nums '
                           '(example: "2 3 2 2 1") or "q" to quit: '))
         if s == "q":
             break;
-        print
+        print()
 
         i = 0
         pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff');

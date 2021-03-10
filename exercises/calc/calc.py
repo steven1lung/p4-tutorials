@@ -68,10 +68,10 @@ def main():
     iface = 'eth0'
 
     while True:
-        s = str(raw_input('> '))
+        s = str(input('> '))
         if s == "quit":
             break
-        print s
+        print(s)
         try:
             i,ts = p(s,0,[])
             pkt = Ether(dst='00:04:00:00:00:00', type=0x1234) / P4calc(op=ts[1].value,
@@ -84,13 +84,13 @@ def main():
             if resp:
                 p4calc=resp[P4calc]
                 if p4calc:
-                    print p4calc.result
+                    print(p4calc.result)
                 else:
-                    print "cannot find P4calc header in the packet"
+                    print("cannot find P4calc header in the packet")
             else:
-                print "Didn't receive response"
+                print("Didn't receive response")
         except Exception as error:
-            print error
+            print(error)
 
 
 if __name__ == '__main__':

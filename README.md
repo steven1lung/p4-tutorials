@@ -31,6 +31,17 @@ you get started with P4 programming, organized into several modules:
 * [Firewall](./exercises/firewall)
 * [Link Monitoring](./exercises/link_monitor)
 
+## Installation
+* Install Ubuntu 20.04 
+* Install git & p4-guide
+    ```
+    $ sudo apt-get install git
+    $ mkdir p4; cd p4
+    $ git clone https://github.com/jafingerhut/p4-guide
+    $ ./p4-guide/bin/install-p4dev-v2.sh |& tee log.txt
+    ```
+* wait for 1~2 hours
+
 ## Presentation 
 
 The slides are available [online](http://bit.ly/p4d2-2018-spring) and

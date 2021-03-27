@@ -195,11 +195,13 @@ control MyIngress(inout headers hdr,
 
     table black_list{
        key = {
-           hdr.ipv4.srcAddr: lpm;   
+           hdr.ipv4.srcAddr: lpm; 
+          // standard_metadata.egress_spec: exact;
+          // standard_metadata.ingress_port: exact;
+        //  hdr.ethernet.srcAddr:exact;
        }
        actions={
            drop;
-           ipv4_forward;
            NoAction;
        }
        size = 1024;
@@ -208,10 +210,10 @@ control MyIngress(inout headers hdr,
     
     apply {
         if (hdr.ipv4.isValid()){
-            black_list.apply();
             ipv4_lpm.apply();
             if (hdr.tcp.isValid()){
                 //modified
+                black_list.apply();
 
     
 

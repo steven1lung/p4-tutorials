@@ -6,7 +6,7 @@
     {
       "table": "MyIngress.black_list",
       "match": {
-        "hdr.ipv4.srcAddr": ["10.0.3.3", 32]
+        "hdr.ipv4.srcAddr": ["10.0.4.4",32]
       },
       "action_name" : "MyIngress.drop",
       "action_params":{ }

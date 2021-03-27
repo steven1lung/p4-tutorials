@@ -1,0 +1,781 @@
+sniffing on eth0
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'
+got a packet
+###[ Ethernet ]###
+  dst       = 08:00:00:00:02:02
+  src       = 08:00:00:00:02:00
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x1
+     len       = 42
+     id        = 1
+     flags     = 
+     frag      = 0L
+     ttl       = 62
+     proto     = udp
+     chksum    = 0x65bf
+     src       = 10.0.1.1
+     dst       = 10.0.2.2
+     \options   \
+###[ UDP ]###
+        sport     = 1234
+        dport     = 4321
+        len       = 22
+        chksum    = 0x2e4e
+###[ Raw ]###
+           load      = 'steven is cool'

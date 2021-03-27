@@ -126,6 +126,13 @@ control MyIngress(inout headers hdr,
     bit<32> reg_pos_one; bit<32> reg_pos_two;
     bit<1> reg_val_one; bit<1> reg_val_two;
     bit<1> direction;
+    
+    //added variables below 
+    bit<32> packet_counter;
+    bit<32> packet_limit;
+    bit<32> some_limit;
+    bit<32> drop_time; 
+    
 
     action drop() {
         mark_to_drop(standard_metadata);
@@ -167,7 +174,7 @@ control MyIngress(inout headers hdr,
         size = 1024;
         default_action = drop();
     }
-
+    //delet below action
     action set_direction(bit<1> dir) {
         direction = dir;
     }
@@ -178,19 +185,58 @@ control MyIngress(inout headers hdr,
             standard_metadata.egress_spec: exact;
         }
         actions = {
+            //delete below
             set_direction;
             NoAction;
         }
         size = 1024;
         default_action = NoAction();
     }
+
+    table black_list{
+       key = {
+           hdr.ipv4.srcAddr: lpm;   
+       }
+       actions={
+           drop;
+           ipv4_forward;
+           NoAction;
+       }
+       size = 1024;
+       default_action = NoAction();
+    }
     
     apply {
         if (hdr.ipv4.isValid()){
+            black_list.apply();
             ipv4_lpm.apply();
             if (hdr.tcp.isValid()){
-                direction = 0; // default
-                if (check_ports.apply().hit) {
+                //modified
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+                //delete below
+                //direiction = 0; // default
+                //if (check_ports.apply().hit) {
+                    
+                    
+
+
+
+
+
+                    /*
                     // test and set the bloom filter
                     if (direction == 0) {
                         compute_hashes(hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.tcp.srcPort, hdr.tcp.dstPort);
@@ -200,17 +246,24 @@ control MyIngress(inout headers hdr,
                     }
                     // Packet comes from internal network
                     if (direction == 0){
-                        // TODO: this packet is part of an outgoing TCP connection.
-                        //   We need to set the bloom filter if this is a SYN packet
-                        //   E.g. bloom_filter_1.write(<index>, <value>);
+                        // If there is a syn we update the bloom filter and add the entry
+                        if (hdr.tcp.syn == 1){
+                            bloom_filter_1.write(reg_pos_one, 1);
+                            bloom_filter_2.write(reg_pos_two, 1);
+                        }
                     }
                     // Packet comes from outside
                     else if (direction == 1){
-                        // TODO: this packet is part of an incomming TCP connection.
-                        //   We need to check if this packet is allowed to pass by reading the bloom filter
-                        //   E.g. bloom_filter_1.read(<value>, <index>);
-                    }
-                }
+                        // Read bloom filter cells to check if there are 1's
+                        bloom_filter_1.read(reg_val_one, reg_pos_one);
+                        bloom_filter_2.read(reg_val_two, reg_pos_two);
+                        // only allow flow to pass if both entries are set
+                        if (reg_val_one != 1 || reg_val_two != 1){
+                            drop();
+                        }
+                   // }
+                    */
+                
             }
         }
     }

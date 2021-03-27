@@ -4,92 +4,12 @@
   "bmv2_json": "build/firewall.json",
   "table_entries": [
     {
-      "table": "MyIngress.check_ports",
+      "table": "MyIngress.black_list",
       "match": {
-        "standard_metadata.ingress_port": 1,
-        "standard_metadata.egress_spec": 3
+        "hdr.ipv4.srcAddr": ["10.0.4.4",32]
       },
-      "action_name": "MyIngress.set_direction",
-      "action_params": {
-        "dir": 0
-      }
-    },
-    {
-      "table": "MyIngress.check_ports",
-      "match": {
-        "standard_metadata.ingress_port": 1,
-        "standard_metadata.egress_spec": 4
-      },
-      "action_name": "MyIngress.set_direction",
-      "action_params": {
-        "dir": 0
-      }
-    },
-    {
-      "table": "MyIngress.check_ports",
-      "match": {
-        "standard_metadata.ingress_port": 2,
-        "standard_metadata.egress_spec": 3
-      },
-      "action_name": "MyIngress.set_direction",
-      "action_params": {
-        "dir": 0
-      }
-    },
-    {
-      "table": "MyIngress.check_ports",
-      "match": {
-        "standard_metadata.ingress_port": 2,
-        "standard_metadata.egress_spec": 4
-      },
-      "action_name": "MyIngress.set_direction",
-      "action_params": {
-        "dir": 0
-      }
-    },
-    {
-      "table": "MyIngress.check_ports",
-      "match": {
-        "standard_metadata.ingress_port": 3,
-        "standard_metadata.egress_spec": 1
-      },
-      "action_name": "MyIngress.set_direction",
-      "action_params": {
-        "dir": 1
-      }
-    },
-    {
-      "table": "MyIngress.check_ports",
-      "match": {
-        "standard_metadata.ingress_port": 3,
-        "standard_metadata.egress_spec": 2
-      },
-      "action_name": "MyIngress.set_direction",
-      "action_params": {
-        "dir": 1
-      }
-    },
-    {
-      "table": "MyIngress.check_ports",
-      "match": {
-        "standard_metadata.ingress_port": 4,
-        "standard_metadata.egress_spec": 1
-      },
-      "action_name": "MyIngress.set_direction",
-      "action_params": {
-        "dir": 1
-      }
-    },
-    {
-      "table": "MyIngress.check_ports",
-      "match": {
-        "standard_metadata.ingress_port": 4,
-        "standard_metadata.egress_spec": 2
-      },
-      "action_name": "MyIngress.set_direction",
-      "action_params": {
-        "dir": 1
-      }
+      "action_name" : "MyIngress.drop",
+      "action_params":{ }
     },
     {
       "table": "MyIngress.ipv4_lpm",

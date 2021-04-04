@@ -7,6 +7,7 @@
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<8>  TYPE_TCP  = 6;
 
+
 #define BLOOM_FILTER_ENTRIES 4096
 #define BLOOM_FILTER_BIT_WIDTH 1
 
@@ -121,23 +122,26 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
 
-    register<bit<BLOOM_FILTER_BIT_WIDTH>>(BLOOM_FILTER_ENTRIES) bloom_filter_1;
-    register<bit<BLOOM_FILTER_BIT_WIDTH>>(BLOOM_FILTER_ENTRIES) bloom_filter_2;
+    //register<bit<BLOOM_FILTER_BIT_WIDTH>>(BLOOM_FILTER_ENTRIES) bloom_filter_1;
+    //register<bit<BLOOM_FILTER_BIT_WIDTH>>(BLOOM_FILTER_ENTRIES) bloom_filter_2;
     bit<32> reg_pos_one; bit<32> reg_pos_two;
     bit<1> reg_val_one; bit<1> reg_val_two;
     bit<1> direction;
     
     //added variables below 
-    bit<32> packet_counter;
-    bit<32> packet_limit;
+    register<bit<32>>(1) packet_counter;
+    register<bit<32>>(1) packet_limit;
+    
     bit<32> some_limit;
     bit<32> drop_time; 
+
+    
     
 
     action drop() {
         mark_to_drop(standard_metadata);
     }
-
+    /*
     action compute_hashes(ip4Addr_t ipAddr1, ip4Addr_t ipAddr2, bit<16> port1, bit<16> port2){
        //Get register position
        hash(reg_pos_one, HashAlgorithm.crc16, (bit<32>)0, {ipAddr1,
@@ -153,7 +157,7 @@ control MyIngress(inout headers hdr,
                                                            port2,
                                                            hdr.ipv4.protocol},
                                                            (bit<32>)BLOOM_FILTER_ENTRIES);
-    }
+    }*/
 
     action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
@@ -179,20 +183,6 @@ control MyIngress(inout headers hdr,
         direction = dir;
     }
 
-    table check_ports {
-        key = {
-            standard_metadata.ingress_port: exact;
-            standard_metadata.egress_spec: exact;
-        }
-        actions = {
-            //delete below
-            set_direction;
-            NoAction;
-        }
-        size = 1024;
-        default_action = NoAction();
-    }
-
     table black_list{
        key = {
            hdr.ipv4.srcAddr: lpm; 
@@ -207,65 +197,30 @@ control MyIngress(inout headers hdr,
        size = 1024;
        default_action = NoAction();
     }
+
     
     apply {
         if (hdr.ipv4.isValid()){
             ipv4_lpm.apply();
             if (hdr.tcp.isValid()){
-                //modified
-                black_list.apply();
 
-    
-
-
-
-
-
-
-
-
-
-
-
-
-                //delete below
-                //direiction = 0; // default
-                //if (check_ports.apply().hit) {
-                    
-                    
-
-
-
-
-
-                    /*
-                    // test and set the bloom filter
-                    if (direction == 0) {
-                        compute_hashes(hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.tcp.srcPort, hdr.tcp.dstPort);
-                    }
-                    else {
-                        compute_hashes(hdr.ipv4.dstAddr, hdr.ipv4.srcAddr, hdr.tcp.dstPort, hdr.tcp.srcPort);
-                    }
-                    // Packet comes from internal network
-                    if (direction == 0){
-                        // If there is a syn we update the bloom filter and add the entry
-                        if (hdr.tcp.syn == 1){
-                            bloom_filter_1.write(reg_pos_one, 1);
-                            bloom_filter_2.write(reg_pos_two, 1);
-                        }
-                    }
-                    // Packet comes from outside
-                    else if (direction == 1){
-                        // Read bloom filter cells to check if there are 1's
-                        bloom_filter_1.read(reg_val_one, reg_pos_one);
-                        bloom_filter_2.read(reg_val_two, reg_pos_two);
-                        // only allow flow to pass if both entries are set
-                        if (reg_val_one != 1 || reg_val_two != 1){
-                            drop();
-                        }
-                   // }
-                    */
                 
+                //modified
+                bit<32> tmp;
+                bit<32> limit;
+                packet_limit.read(limit,0);
+
+
+                //set controller
+                if(limit==0){
+                    limit=2;
+                }
+
+                packet_counter.read(tmp,0);
+                packet_counter.write(0,tmp+1);
+                if(tmp>limit){
+                    black_list.apply();
+                }
             }
         }
     }

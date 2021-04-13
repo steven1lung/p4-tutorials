@@ -135,6 +135,7 @@ control MyIngress(inout headers hdr,
     register<bit<32>>(1) packet_limit;
     
     bit<32> some_limit;
+    bit<32> limit;
     bit<32> drop_time; 
 
     //counter(MAX_ID, CounterType.packet_and_bytes) packetCounter;
@@ -211,16 +212,10 @@ control MyIngress(inout headers hdr,
                 
                 //modified
                 bit<32> tmp;
-                bit<32> limit;
-                packet_limit.read(limit,0);
-
-
-                //set controller
-                if(limit==0){
-                    limit=2;
-                }
                 
-        
+                packet_limit.read(limit,0);
+                
+
                 packet_counter.read(tmp,0);
                 packet_counter.write(0,tmp+1);
                 if(tmp>limit){

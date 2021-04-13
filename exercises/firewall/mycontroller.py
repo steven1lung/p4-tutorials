@@ -21,6 +21,29 @@ import runtime_CLI
 SWITCH_TO_HOST_PORT = 1
 SWITCH_TO_SWITCH_PORT = 2
 
+def enum(type_name, *sequential, **named):
+    enums = dict(list(zip(sequential, list(range(len(sequential))))), **named)
+    reverse = dict((value, key) for key, value in enums.items())
+
+    @staticmethod
+    def to_str(x):
+        return reverse[x]
+    enums['to_str'] = to_str
+
+    @staticmethod
+    def from_str(x):
+        return enums[x]
+
+    enums['from_str'] = from_str
+    return type(type_name, (), enums)
+
+
+PreType = enum('PreType', 'none', 'SimplePre', 'SimplePreLAG')
+MeterType = enum('MeterType', 'packets', 'bytes')
+TableType = enum('TableType', 'simple', 'indirect', 'indirect_ws')
+ResType = enum('ResType', 'table', 'action_prof', 'action', 'meter_array',
+               'counter_array', 'register_array', 'parse_vset')
+
 
 def writeTunnelRules(p4info_helper, ingress_sw, egress_sw, tunnel_id,
                      dst_eth_addr, dst_ip_addr):
@@ -163,29 +186,29 @@ def main(p4info_file_path, bmv2_file_path):
         # Create a switch connection object for s1 and s2;
         # this is backed by a P4Runtime gRPC connection.
         # Also, dump all P4Runtime messages sent to switch to given txt files.
-        s1 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
-            name='s1',
-            address='127.0.0.1:50051',
-            device_id=0,
-            proto_dump_file='logs/s1-p4runtime-requests2.txt')
-        s2 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
-            name='s2',
-            address='127.0.0.1:50052',
-            device_id=1,
-            proto_dump_file='logs/s2-p4runtime-requests2.txt')
+        #s1 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
+        #    name='s1',
+        #    address='127.0.0.1:50051',
+        #    device_id=0,
+        #    proto_dump_file='logs/s1-p4runtime-requests2.txt')
+        #s2 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
+         #   name='s2',
+        #    address='127.0.0.1:50052',
+        #    device_id=1,
+         #   proto_dump_file='logs/s2-p4runtime-requests2.txt')
 
         # Send master arbitration update message to establish this controller as
         # master (required by P4Runtime before performing any other write operation)
-        s1.MasterArbitrationUpdate()
-        s2.MasterArbitrationUpdate()
+       # s1.MasterArbitrationUpdate()
+       # s2.MasterArbitrationUpdate()
 
         # Install the P4 program on the switches
-        s1.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
-                                       bmv2_json_file_path=bmv2_file_path)
-        print ("Installed P4 Program using SetForwardingPipelineConfig on s1")
-        s2.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
-                                       bmv2_json_file_path=bmv2_file_path)
-        print ("Installed P4 Program using SetForwardingPipelineConfig on s2")
+        #s1.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
+                        #               bmv2_json_file_path=bmv2_file_path)
+        #print ("Installed P4 Program using SetForwardingPipelineConfig on s1")
+        #s2.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
+                         #              bmv2_json_file_path=bmv2_file_path)
+        #print ("Installed P4 Program using SetForwardingPipelineConfig on s2")
 
         # Write the rules that tunnel traffic from h1 to h2
         #writeTunnelRules(p4info_helper, ingress_sw=s1, egress_sw=s2, tunnel_id=100,
@@ -206,11 +229,15 @@ def main(p4info_file_path, bmv2_file_path):
         )
         runtime_CLI.load_json_config(standard_client, None)
 
-        runtime_CLI.RuntimeAPI(1, standard_client, mc_client).cmdloop()
+
+        
+        
             
         # Print the tunnel counters every 2 seconds
-        #while True:
-         #   sleep(2)
+        while True:
+            
+            runtime_CLI.RuntimeAPI.client.bm_register_write(0, "packet_limit", 0, 2)
+            sleep(10)
           #  print ('\n----- Reading packet_limit -----')
             #printCounter(p4info_helper, s1, "MyIngress.ingressTunnelCounter", 100)
             #printCounter(p4info_helper, s2, "MyIngress.egressTunnelCounter", 100)

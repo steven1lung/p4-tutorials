@@ -2610,7 +2610,7 @@ def load_json_config(standard_client=None, json_path=None, architecture_spec=Non
 
 def main():
     args = get_parser().parse_args()
-
+    print(args)
     standard_client, mc_client = thrift_connect(
         args.thrift_ip, args.thrift_port,
         RuntimeAPI.get_thrift_services(args.pre)

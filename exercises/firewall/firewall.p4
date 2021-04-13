@@ -136,7 +136,7 @@ control MyIngress(inout headers hdr,
     bit<32> some_limit;
     bit<32> drop_time; 
 
-    counter(MAX_ID, CounterType.packet_and_bytes) packetCounter;
+    //counter(MAX_ID, CounterType.packet_and_bytes) packetCounter;
 
     
     

@@ -10,6 +10,7 @@ const bit<8>  TYPE_TCP  = 6;
 
 #define BLOOM_FILTER_ENTRIES 4096
 #define BLOOM_FILTER_BIT_WIDTH 1
+#define MAX_ID 1<<16
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -135,6 +136,8 @@ control MyIngress(inout headers hdr,
     bit<32> some_limit;
     bit<32> drop_time; 
 
+    counter(MAX_ID, CounterType.packet_and_bytes) packetCounter;
+
     
     
 
@@ -215,7 +218,8 @@ control MyIngress(inout headers hdr,
                 if(limit==0){
                     limit=2;
                 }
-
+                
+        
                 packet_counter.read(tmp,0);
                 packet_counter.write(0,tmp+1);
                 if(tmp>limit){

@@ -903,6 +903,7 @@ class RuntimeAPI(cmd.Cmd):
         self.pre_type = pre_type
 
     def do_greet(self, line):
+        
         print("hello")
 
     def do_EOF(self, line):
@@ -2128,6 +2129,7 @@ class RuntimeAPI(cmd.Cmd):
         "Write register value: register_write <name> <index> <value>"
         args = line.split()
         self.exactly_n_args(args, 3)
+        
         register_name = args[0]
         register = self.get_res("register", register_name,
                                 ResType.register_array)
@@ -2150,6 +2152,7 @@ class RuntimeAPI(cmd.Cmd):
     def do_register_reset(self, line):
         "Reset all the cells in the register array to 0: register_reset <name>"
         args = line.split()
+        
         self.exactly_n_args(args, 1)
         register_name = args[0]
         register = self.get_res("register", register_name,

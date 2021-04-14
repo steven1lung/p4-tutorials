@@ -14,6 +14,13 @@ import p4runtime_lib.bmv2
 from p4runtime_lib.switch import ShutdownAllSwitchConnections
 import p4runtime_lib.helper
 
+
+from bm_runtime.standard import Standard
+from bm_runtime.standard.ttypes import *
+
+import bm_runtime
+
+
 #import runtime_CLI
 import runtime_CLI
 
@@ -230,13 +237,17 @@ def main(p4info_file_path, bmv2_file_path):
         runtime_CLI.load_json_config(standard_client, None)
 
 
-        
+        register = runtime_CLI.RuntimeAPI.get_res("register", "packet_limit",ResType.register_array)
         
             
         # Print the tunnel counters every 2 seconds
         while True:
             
-            runtime_CLI.RuntimeAPI.client.bm_register_write(0, "packet_limit", 0, 2)
+            #bm_register_write(0, "packet_limit", 0, 2)
+            standard_client.bm_register_write(0, "packet_limit", 0, 2)
+            #os.system("register_read packet_limit 0")
+            #runtime_CLI.RuntimeCmd
+            print("limit reset")
             sleep(10)
           #  print ('\n----- Reading packet_limit -----')
             #printCounter(p4info_helper, s1, "MyIngress.ingressTunnelCounter", 100)

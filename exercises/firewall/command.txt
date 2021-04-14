@@ -1,0 +1,2 @@
+register_write packet_limit 0 2
+register_read packet_counter 0

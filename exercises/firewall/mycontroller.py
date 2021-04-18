@@ -181,7 +181,7 @@ def printGrpcError(e):
 def main(p4info_file_path, bmv2_file_path):
     # Instantiate a P4Runtime helper from the p4info file
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info_file_path)
-
+    time=0
     try:
         # Create a switch connection object for s1 and s2;
         # this is backed by a P4Runtime gRPC connection.
@@ -238,15 +238,20 @@ def main(p4info_file_path, bmv2_file_path):
         
             
         # Print the tunnel counters every 2 seconds
-        #while True:
-            
-            #runtime_CLI.RuntimeAPI.client.bm_register_write(0, "packet_limit", 0, 2)
-        run.do_register_write("packet_limit 0 2")
-        print(run.do_register_read("packet_limit 0"))
+        while True:
+            #run.do_register_write("packet_limit 0 2")
+            #print(run.do_register_read("packet_limit 0"))
 
-        run.do_register_write("packet_limit 0 4")
-        print(run.do_register_read("packet_limit 0"))
-        sleep(100)
+            #run.do_register_write("packet_limit 0 4")
+            #print(run.do_register_read("packet_limit 0"))
+            if(time==5):
+                run.do_register_reset("syn_count 0")
+                run.do_register_reset("ack_count 0")
+                #run.do_register_write("syn_counter 0 100")
+            if(time==3600):
+                run.do_register_reset("dns_query 0")
+            time+=5
+            sleep(5)
           #  print ('\n----- Reading packet_limit -----')
             #printCounter(p4info_helper, s1, "MyIngress.ingressTunnelCounter", 100)
             #printCounter(p4info_helper, s2, "MyIngress.egressTunnelCounter", 100)

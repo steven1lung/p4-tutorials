@@ -21,6 +21,7 @@ typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 
+
 header ethernet_t {
     macAddr_t dstAddr;
     macAddr_t srcAddr;
@@ -124,45 +125,24 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
 
-    //register<bit<BLOOM_FILTER_BIT_WIDTH>>(BLOOM_FILTER_ENTRIES) bloom_filter_1;
-    //register<bit<BLOOM_FILTER_BIT_WIDTH>>(BLOOM_FILTER_ENTRIES) bloom_filter_2;
-    bit<32> reg_pos_one; bit<32> reg_pos_two;
-    bit<1> reg_val_one; bit<1> reg_val_two;
-    bit<1> direction;
     
     //added variables below 
-    register<bit<32>>(1) packet_counter;
-    register<bit<32>>(1) packet_limit;
-    
-    bit<32> some_limit;
-    bit<32> limit;
-    bit<32> drop_time; 
 
-    //counter(MAX_ID, CounterType.packet_and_bytes) packetCounter;
+
+    register<bit<32>>(1) syn_counter;
+    register<bit<32>>(1) ack_counter;
+    register<bit<32>>(3) dns_query;
 
     
-    
 
+    bit<32>syn_limit;
+
+
+  
+    
     action drop() {
         mark_to_drop(standard_metadata);
     }
-    /*
-    action compute_hashes(ip4Addr_t ipAddr1, ip4Addr_t ipAddr2, bit<16> port1, bit<16> port2){
-       //Get register position
-       hash(reg_pos_one, HashAlgorithm.crc16, (bit<32>)0, {ipAddr1,
-                                                           ipAddr2,
-                                                           port1,
-                                                           port2,
-                                                           hdr.ipv4.protocol},
-                                                           (bit<32>)BLOOM_FILTER_ENTRIES);
-
-       hash(reg_pos_two, HashAlgorithm.crc32, (bit<32>)0, {ipAddr1,
-                                                           ipAddr2,
-                                                           port1,
-                                                           port2,
-                                                           hdr.ipv4.protocol},
-                                                           (bit<32>)BLOOM_FILTER_ENTRIES);
-    }*/
 
     action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
@@ -183,24 +163,58 @@ control MyIngress(inout headers hdr,
         size = 1024;
         default_action = drop();
     }
-    //delet below action
-    action set_direction(bit<1> dir) {
-        direction = dir;
+
+    action update_syn (){
+        bit<32> tmp_syn;
+        syn_counter.read(tmp_syn,0);
+        syn_counter.write(0,tmp_syn+1);
     }
 
-    table black_list{
-       key = {
-           hdr.ipv4.srcAddr: lpm; 
-          // standard_metadata.egress_spec: exact;
-          // standard_metadata.ingress_port: exact;
-        //  hdr.ethernet.srcAddr:exact;
-       }
-       actions={
-           drop;
-           NoAction;
-       }
-       size = 1024;
-       default_action = NoAction();
+    action update_ack (){
+        bit<32> tmp_ack;
+        ack_counter.read(tmp_ack,0);
+        ack_counter.write(0,tmp_ack+1);
+    }
+
+
+    table count_syn{
+        key={
+            hdr.tcp.syn : exact;
+        }
+        actions={
+            update_syn;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+
+    table count_ack{
+        key={
+            hdr.tcp.ack : exact;
+        }
+        actions={
+            update_ack;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+
+    action update_query(bit<32> sport){
+        bit<32> tmp_dns;
+        dns_query.read(tmp_dns,sport);
+        dns_query.write(sport,tmp_dns+1);
+    }
+
+    table dns_table{
+        key={
+            hdr.tcp.srcPort : exact;
+            hdr.tcp.dstPort : exact;
+        }
+        actions={
+            update_query;
+            NoAction;
+        }
+        default_action = NoAction();
     }
 
     
@@ -209,18 +223,29 @@ control MyIngress(inout headers hdr,
             ipv4_lpm.apply();
             if (hdr.tcp.isValid()){
 
+                //syn flood
+                count_syn.apply();
+                count_ack.apply();
+
+                bit<32> tmp_ack;
+                bit<32>tmp_syn;
+                ack_counter.read(tmp_ack,0);
+                syn_counter.read(tmp_syn,0);
+                if(tmp_syn-tmp_ack > 3){
+                    drop();
+                }
+
+                //DNS amplification
+                dns_table.apply();
+                bit<32> tmp_dns;
+                dns_query.read(tmp_dns,(bit<32>)hdr.tcp.srcPort);
+                if(tmp_dns<=0){
+                    drop();
+                }
                 
-                //modified
-                bit<32> tmp;
-                
-                packet_limit.read(limit,0);
                 
 
-                packet_counter.read(tmp,0);
-                packet_counter.write(0,tmp+1);
-                if(tmp>limit){
-                    black_list.apply();
-                }
+          
             }
         }
     }

@@ -4,12 +4,42 @@
   "bmv2_json": "build/firewall.json",
   "table_entries": [
     {
-      "table": "MyIngress.black_list",
+      "table": "MyIngress.count_syn",
       "match": {
-        "hdr.ipv4.srcAddr": ["10.0.4.4",32]
+        "hdr.tcp.syn": 1
       },
-      "action_name" : "MyIngress.drop",
+      "action_name" : "MyIngress.update_syn",
       "action_params":{ }
+    },
+    {
+      "table": "MyIngress.count_ack",
+      "match": {
+        "hdr.tcp.ack": 1
+      },
+      "action_name" : "MyIngress.update_ack",
+      "action_params":{ }
+    },
+    {
+      "table": "MyIngress.dns_table",
+      "match": {
+        "hdr.tcp.srcPort": 1,
+        "hdr.tcp.dstPort": 1
+      },
+      "action_name" : "MyIngress.update_query",
+      "action_params":{ 
+        "sport" : 1
+      }
+    },
+    {
+      "table": "MyIngress.dns_table",
+      "match": {
+        "hdr.tcp.srcPort": 2,
+        "hdr.tcp.dstPort": 1
+      },
+      "action_name" : "MyIngress.update_query",
+      "action_params":{ 
+        "sport" : 2
+      }
     },
     {
       "table": "MyIngress.ipv4_lpm",

@@ -223,21 +223,30 @@ def main(p4info_file_path, bmv2_file_path):
         #readTableRules(p4info_helper, s2)
 
         #setup runtime_CLI
+
+        
+
         standard_client, mc_client = runtime_CLI.thrift_connect(
             'localhost', 9090,
             runtime_CLI.RuntimeAPI.get_thrift_services(1)
         )
         runtime_CLI.load_json_config(standard_client, None)
-
+        
+        run=runtime_CLI.RuntimeAPI(1,standard_client,mc_client)
 
         
         
             
         # Print the tunnel counters every 2 seconds
-        while True:
+        #while True:
             
-            runtime_CLI.RuntimeAPI.client.bm_register_write(0, "packet_limit", 0, 2)
-            sleep(10)
+            #runtime_CLI.RuntimeAPI.client.bm_register_write(0, "packet_limit", 0, 2)
+        run.do_register_write("packet_limit 0 2")
+        print(run.do_register_read("packet_limit 0"))
+
+        run.do_register_write("packet_limit 0 4")
+        print(run.do_register_read("packet_limit 0"))
+        sleep(100)
           #  print ('\n----- Reading packet_limit -----')
             #printCounter(p4info_helper, s1, "MyIngress.ingressTunnelCounter", 100)
             #printCounter(p4info_helper, s2, "MyIngress.egressTunnelCounter", 100)

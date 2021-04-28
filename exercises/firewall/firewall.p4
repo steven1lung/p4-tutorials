@@ -7,6 +7,7 @@
 
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<8>  TYPE_TCP  = 6;
+const bit<8>  TYPE_UDP  = 17;
 
 
 #define BLOOM_FILTER_ENTRIES 4096
@@ -78,6 +79,7 @@ struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
     tcp_t        tcp;
+    udp_t        udp;
 }
 
 /*************************************************************************
@@ -105,6 +107,7 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol){
             TYPE_TCP: tcp;
+            TYPE_UDP: udp;
             default: accept;
         }
     }
@@ -112,6 +115,11 @@ parser MyParser(packet_in packet,
     state tcp {
        packet.extract(hdr.tcp);
        transition accept;
+    }
+
+    state udp{
+        packet.extract(hdr.udp);
+        transition accept;
     }
 }
 
@@ -135,21 +143,14 @@ control MyIngress(inout headers hdr,
     
     //added variables below 
 
-<<<<<<< HEAD
 
     register<bit<32>>(1) syn_counter;
     register<bit<32>>(1) ack_counter;
     register<bit<32>>(3) dns_query;
 
-=======
-
-    register<bit<32>>(1) syn_counter;
-    register<bit<32>>(1) ack_counter;
-    register<bit<32>>(3) dns_query;
-
->>>>>>> b10c4bc64e9079e362f954665cd8f9c452d1f1a6
     
 
+    
     bit<32>syn_limit;
 
 
@@ -189,7 +190,6 @@ control MyIngress(inout headers hdr,
         bit<32> tmp_ack;
         ack_counter.read(tmp_ack,0);
         ack_counter.write(0,tmp_ack+1);
-<<<<<<< HEAD
     }
 
 
@@ -221,39 +221,6 @@ control MyIngress(inout headers hdr,
         dns_query.write(sport,tmp_dns+1);
     }
 
-=======
-    }
-
-
-    table count_syn{
-        key={
-            hdr.tcp.syn : exact;
-        }
-        actions={
-            update_syn;
-            NoAction;
-        }
-        default_action = NoAction();
-    }
-
-    table count_ack{
-        key={
-            hdr.tcp.ack : exact;
-        }
-        actions={
-            update_ack;
-            NoAction;
-        }
-        default_action = NoAction();
-    }
-
-    action update_query(bit<32> sport){
-        bit<32> tmp_dns;
-        dns_query.read(tmp_dns,sport);
-        dns_query.write(sport,tmp_dns+1);
-    }
-
->>>>>>> b10c4bc64e9079e362f954665cd8f9c452d1f1a6
     table dns_table{
         key={
             hdr.tcp.srcPort : exact;
@@ -287,9 +254,9 @@ control MyIngress(inout headers hdr,
                 //DNS amplification
                 dns_table.apply();
                 bit<32> tmp_dns;
-                dns_query.read(tmp_dns,(bit<32>)hdr.tcp.srcPort);
+                //dns_query.read(tmp_dns,(bit<32>)hdr.tcp.srcPort);
                 if(tmp_dns<=0){
-                    drop();
+                    //drop();
                 }
                 
                 
@@ -339,10 +306,14 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 *************************************************************************/
 
 control MyDeparser(packet_out packet, in headers hdr) {
+
+
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
+        packet.emit(hdr.udp);
         packet.emit(hdr.tcp);
+        
     }
 }
 

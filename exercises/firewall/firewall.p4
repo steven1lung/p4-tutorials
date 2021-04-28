@@ -7,8 +7,9 @@
 
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<8>  TYPE_TCP  = 6;
-const bit<8>  TYPE_UDP  = 17;
-
+const bit<16> TYPE_LLDP = 0x88cc;
+const bit<16> TYPE_PIN = 0x88ce;
+const bit<16> TYPE_POUT = 0x88cf;
 
 #define BLOOM_FILTER_ENTRIES 4096
 #define BLOOM_FILTER_BIT_WIDTH 1
@@ -71,6 +72,25 @@ header udp_t{
     bit<16> checksum;
 }
 
+header lldp_t{
+    bit<9> portID;
+    bit<7> padding;
+}
+
+
+#header packet_in_t{
+#    bit<9> sport;
+#    bit<9> dport;
+#    bit<6> padding;
+#}
+
+#header packet_out_t{
+#    bit<9> egress_port;
+#    bit<16> mcast;
+#    bit<7> padding;
+#}
+
+
 struct metadata {
     /* empty */
 }
@@ -79,7 +99,7 @@ struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
     tcp_t        tcp;
-    udp_t        udp;
+    lldp_t       lldp;
 }
 
 /*************************************************************************
@@ -99,6 +119,7 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV4: parse_ipv4;
+            TYPR_LLDP: parse_lldp;
             default: accept;
         }
     }
@@ -107,7 +128,6 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol){
             TYPE_TCP: tcp;
-            TYPE_UDP: udp;
             default: accept;
         }
     }
@@ -117,8 +137,8 @@ parser MyParser(packet_in packet,
        transition accept;
     }
 
-    state udp{
-        packet.extract(hdr.udp);
+    state parse_lldp{
+        packet.extract(hdr.lldp);
         transition accept;
     }
 }
@@ -143,12 +163,22 @@ control MyIngress(inout headers hdr,
     
     //added variables below 
 
+<<<<<<< HEAD
 
     register<bit<32>>(1) syn_counter;
     register<bit<32>>(1) ack_counter;
-    register<bit<32>>(1) udp_counter;
-    register<bit<32>>(1) udp_limit;
-    register<bit<32>>(1) syn_limit;
+    register<bit<32>>(3) dns_query;
+
+=======
+
+    register<bit<32>>(1) syn_counter;
+    register<bit<32>>(1) ack_counter;
+    register<bit<32>>(3) dns_query;
+
+>>>>>>> b10c4bc64e9079e362f954665cd8f9c452d1f1a6
+    
+
+    bit<32>syn_limit;
 
 
   
@@ -187,12 +217,61 @@ control MyIngress(inout headers hdr,
         bit<32> tmp_ack;
         ack_counter.read(tmp_ack,0);
         ack_counter.write(0,tmp_ack+1);
+<<<<<<< HEAD
     }
 
-    action update_udp(){
-        bit<32> tmp_udp;
-        udp_counter.read(tmp_udp,0);
-        udp_counter.write(0,tmp_udp+1);
+    action send_to_cpu(macAddr_t swAddr){
+        standard_metadata.egress_spec = CPU_PORT;
+        hdr.ethernet.dstAddr = swAddr;
+        hdr.packet_in.setValid();
+        hdr.packet_in.sport = hdr.lldp.port;
+        hdr.packet_in.dport = standard_metadata.ingress_port;
+    }
+
+    action lldp_forward(macAddr_t swAddr){
+        standard_metadata.egress_spec = hdr.packet_out.egress_port;
+        hdr.ether.setValid();
+        hdr.lldp.setValid();
+        hdr.ethernet.etherType = TYPE_LLDP;
+        hdr.ethernet.srcAddr = swAddr;
+        hdr.lldp.port = hdr.packet_out.egress_port;
+    }
+
+    action respond_to_cpu(macAddr_t swAddr){
+        standard_metadata.egress_spec = CPU_PORT;
+        hdr.ethernet.setValid();
+        hdr.ethernet.srcAddr = swAddr;
+    }
+
+    table count_syn{
+        key={
+            hdr.tcp.syn : exact;
+        }
+        actions={
+            update_syn;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+
+    table count_ack{
+        key={
+            hdr.tcp.ack : exact;
+        }
+        actions={
+            update_ack;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+
+    action update_query(bit<32> sport){
+        bit<32> tmp_dns;
+        dns_query.read(tmp_dns,sport);
+        dns_query.write(sport,tmp_dns+1);
+    }
+
+=======
     }
 
 
@@ -218,13 +297,13 @@ control MyIngress(inout headers hdr,
         default_action = NoAction();
     }
 
-    /*
     action update_query(bit<32> sport){
         bit<32> tmp_dns;
         dns_query.read(tmp_dns,sport);
         dns_query.write(sport,tmp_dns+1);
     }
 
+>>>>>>> b10c4bc64e9079e362f954665cd8f9c452d1f1a6
     table dns_table{
         key={
             hdr.tcp.srcPort : exact;
@@ -236,8 +315,6 @@ control MyIngress(inout headers hdr,
         }
         default_action = NoAction();
     }
-    */
-
 
     
     apply {
@@ -251,41 +328,24 @@ control MyIngress(inout headers hdr,
 
                 bit<32> tmp_ack;
                 bit<32>tmp_syn;
-                bit<32> tmp_limit;
-                syn_limit.read(tmp_limit,0);
                 ack_counter.read(tmp_ack,0);
                 syn_counter.read(tmp_syn,0);
-                if(tmp_syn-tmp_ack > tmp_limit){
+                if(tmp_syn-tmp_ack > 3){
                     drop();
                 }
 
-                /*
                 //DNS amplification
                 dns_table.apply();
                 bit<32> tmp_dns;
-                
                 dns_query.read(tmp_dns,(bit<32>)hdr.tcp.srcPort);
                 if(tmp_dns<=0){
-                    //drop();
-                }
-                */
-                
-
-          
-            }
-            else if(hdr.udp.isValid()){
-                //do things
-                update_udp();
-                
-                bit<32> tmp_udp;
-                bit<32> tmp_udp_limit;
-                udp_limit.read(tmp_udp_limit,0);
-                udp_counter.read(tmp_udp,0);
-                if(tmp_udp>tmp_udp_limit){
                     drop();
                 }
-
-            }
+            }    
+                //lldp handeling
+         else if(hdr.lldp.isValid()){
+                pkt_in_table.apply();
+        }  
         }
     }
 }
@@ -329,14 +389,12 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 *************************************************************************/
 
 control MyDeparser(packet_out packet, in headers hdr) {
-
-
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
-        packet.emit(hdr.udp);
         packet.emit(hdr.tcp);
-        
+        packet.emit(hdr.lldp);
+        #packet.emit(hdr.packet_in);
     }
 }
 

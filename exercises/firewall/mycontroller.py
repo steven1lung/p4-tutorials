@@ -4,7 +4,7 @@ import grpc
 import os
 import sys
 from time import sleep
-
+from scapy.contrib import lldp
 # Import P4Runtime lib from parent utils dir
 # Probably there's a better way of doing this.
 sys.path.append(
@@ -171,6 +171,31 @@ def printCounter(p4info_helper, sw, counter_name, index):
                 counter.data.packet_count, counter.data.byte_count
             ))
 
+def writePOutRule(p4info_helper, ingress_sw, padding, sw_addr):
+    """ Install "handle packet_out packet" rule on switch"""
+    if padding == 0: # send to another switch
+        table_entry = p4info_helper.buildTableEntry(
+            table_name = "MyIngress.pkt_out_table",
+            match_fields = {
+                "hdr.packet_out.padding": padding
+            },
+            action_name = "MyIngress.lldp_forward",
+            action_params={
+                "swAddr": sw_addr
+            })
+        ingress_sw.WriteTableEntry(table_entry)
+    elif padding == 1: # send back to controller
+        table_entry = p4info_helper.buildTableEntry(
+            table_name = "MyIngress.pkt_out_table",
+            match_fields = {
+                "hdr.packet_out.padding": padding
+            },
+            action_name = "MyIngress.response_to_cpu",
+            action_params={
+                "swAddr": sw_addr
+            })
+        ingress_sw.WriteTableEntry(table_entry)
+
 def printGrpcError(e):
     print ("gRPC Error:", e.details(),)
     status_code = e.code()
@@ -234,8 +259,7 @@ def main(p4info_file_path, bmv2_file_path):
         
         run=runtime_CLI.RuntimeAPI(1,standard_client,mc_client)
 
-        run.do_register_write("syn_limit 0 3")
-        run.do_register_write("udp_limit 0 3")
+        
         
             
         # Print the tunnel counters every 2 seconds
@@ -248,7 +272,6 @@ def main(p4info_file_path, bmv2_file_path):
             if(time==5):
                 run.do_register_reset("syn_count 0")
                 run.do_register_reset("ack_count 0")
-                run.do_register_reset("udp_counter 0")
                 #run.do_register_write("syn_counter 0 100")
             if(time==3600):
                 run.do_register_reset("dns_query 0")

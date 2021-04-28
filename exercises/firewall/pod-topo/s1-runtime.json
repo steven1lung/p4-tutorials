@@ -22,24 +22,18 @@
     {
       "table": "MyIngress.dns_table",
       "match": {
-        "hdr.tcp.srcPort": 1,
-        "hdr.tcp.dstPort": 1
+        "hdr.dns.dqr": 0
       },
-      "action_name" : "MyIngress.update_query",
-      "action_params":{ 
-        "sport" : 1
-      }
+      "action_name" : "MyIngress.dns_question",
+      "action_params":{ }
     },
     {
       "table": "MyIngress.dns_table",
       "match": {
-        "hdr.tcp.srcPort": 2,
-        "hdr.tcp.dstPort": 1
+        "hdr.dns.dqr": 1
       },
-      "action_name" : "MyIngress.update_query",
-      "action_params":{ 
-        "sport" : 2
-      }
+      "action_name" : "MyIngress.dns_answer",
+      "action_params":{ }
     },
     {
       "table": "MyIngress.ipv4_lpm",

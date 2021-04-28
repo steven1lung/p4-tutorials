@@ -7,7 +7,7 @@
 
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<8>  TYPE_TCP  = 6;
-
+const bit<8>  TYPE_UDP = 17;
 
 #define BLOOM_FILTER_ENTRIES 4096
 #define BLOOM_FILTER_BIT_WIDTH 1
@@ -63,6 +63,33 @@ header tcp_t{
     bit<16> urgentPtr;
 }
 
+header udp_t{
+    bit<16> usrcPort;
+    bit<16> udstPort;
+    bit<16> ulength;
+    bit<16> uchecksum;
+}
+
+header dns_t{
+    bit<16> dlength;
+    bit<16> transid;
+    bit<1>  dqr;
+    bit<4>  dopcode;
+    bit<1>  daa;
+    bit<1>  dtc;
+    bit<1>  drd;
+    bit<1>  dra;
+    bit<1>  dz;
+    bit<1>  dad;
+    bit<1>  dcd;
+    bit<4>  drcode;
+    bit<16> dqdcount;
+    bit<16> dancount;
+    bit<16> dnscount;
+    bit<16> darcount;
+    
+}
+
 struct metadata {
     /* empty */
 }
@@ -71,6 +98,8 @@ struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
     tcp_t        tcp;
+    udp_t        udp;
+    dns_t	 dns;
 }
 
 /*************************************************************************
@@ -98,12 +127,18 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol){
             TYPE_TCP: tcp;
+	    TYPE_UDP: udp;
             default: accept;
         }
     }
 
     state tcp {
        packet.extract(hdr.tcp);
+       transition accept;
+    }
+    state udp {
+       packet.extract(hdr.udp);
+       packet.extract(hdr.dns);
        transition accept;
     }
 }
@@ -131,7 +166,7 @@ control MyIngress(inout headers hdr,
 
     register<bit<32>>(1) syn_counter;
     register<bit<32>>(1) ack_counter;
-    register<bit<32>>(3) dns_query;
+    register<bit<32>>(1) dns_count;
 
     
 
@@ -199,19 +234,25 @@ control MyIngress(inout headers hdr,
         default_action = NoAction();
     }
 
-    action update_query(bit<32> sport){
-        bit<32> tmp_dns;
-        dns_query.read(tmp_dns,sport);
-        dns_query.write(sport,tmp_dns+1);
+    action dns_question(){
+	bit<32> tmp_dns;
+	dns_count.read(tmp_dns,0);
+	dns_count.write(0,tmp_dns+1);
+    }
+
+    action dns_answer(){
+	bit<32> tmp_dns;
+	dns_count.read(tmp_dns,0);
+	dns_count.write(0,tmp_dns-1);
     }
 
     table dns_table{
         key={
-            hdr.tcp.srcPort : exact;
-            hdr.tcp.dstPort : exact;
+            hdr.dns.dqr : exact;
         }
         actions={
-            update_query;
+            dns_question;
+	    dns_answer;
             NoAction;
         }
         default_action = NoAction();
@@ -236,12 +277,14 @@ control MyIngress(inout headers hdr,
                 }
 
                 //DNS amplification
-                dns_table.apply();
-                bit<32> tmp_dns;
-                dns_query.read(tmp_dns,(bit<32>)hdr.tcp.srcPort);
-                if(tmp_dns<=0){
-                    drop();
-                }
+		if(hdr.udp.isValid()){
+                  dns_table.apply();
+                  bit<32> tmp_dns;
+                  dns_count.read(tmp_dns,0);
+                  if(tmp_dns<=0){
+                      drop();
+                  }
+		}
                 
                 
 

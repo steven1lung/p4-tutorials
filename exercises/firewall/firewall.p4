@@ -135,11 +135,19 @@ control MyIngress(inout headers hdr,
     
     //added variables below 
 
+<<<<<<< HEAD
 
     register<bit<32>>(1) syn_counter;
     register<bit<32>>(1) ack_counter;
     register<bit<32>>(3) dns_query;
 
+=======
+
+    register<bit<32>>(1) syn_counter;
+    register<bit<32>>(1) ack_counter;
+    register<bit<32>>(3) dns_query;
+
+>>>>>>> b10c4bc64e9079e362f954665cd8f9c452d1f1a6
     
 
     bit<32>syn_limit;
@@ -181,6 +189,7 @@ control MyIngress(inout headers hdr,
         bit<32> tmp_ack;
         ack_counter.read(tmp_ack,0);
         ack_counter.write(0,tmp_ack+1);
+<<<<<<< HEAD
     }
 
 
@@ -212,6 +221,39 @@ control MyIngress(inout headers hdr,
         dns_query.write(sport,tmp_dns+1);
     }
 
+=======
+    }
+
+
+    table count_syn{
+        key={
+            hdr.tcp.syn : exact;
+        }
+        actions={
+            update_syn;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+
+    table count_ack{
+        key={
+            hdr.tcp.ack : exact;
+        }
+        actions={
+            update_ack;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+
+    action update_query(bit<32> sport){
+        bit<32> tmp_dns;
+        dns_query.read(tmp_dns,sport);
+        dns_query.write(sport,tmp_dns+1);
+    }
+
+>>>>>>> b10c4bc64e9079e362f954665cd8f9c452d1f1a6
     table dns_table{
         key={
             hdr.tcp.srcPort : exact;

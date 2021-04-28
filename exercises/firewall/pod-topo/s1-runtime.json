@@ -20,28 +20,6 @@
       "action_params":{ }
     },
     {
-      "table": "MyIngress.dns_table",
-      "match": {
-        "hdr.tcp.srcPort": 1,
-        "hdr.tcp.dstPort": 1
-      },
-      "action_name" : "MyIngress.update_query",
-      "action_params":{ 
-        "sport" : 1
-      }
-    },
-    {
-      "table": "MyIngress.dns_table",
-      "match": {
-        "hdr.tcp.srcPort": 2,
-        "hdr.tcp.dstPort": 1
-      },
-      "action_name" : "MyIngress.update_query",
-      "action_params":{ 
-        "sport" : 2
-      }
-    },
-    {
       "table": "MyIngress.ipv4_lpm",
       "default_action": true,
       "action_name": "MyIngress.drop",

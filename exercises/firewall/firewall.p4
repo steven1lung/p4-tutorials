@@ -146,12 +146,9 @@ control MyIngress(inout headers hdr,
 
     register<bit<32>>(1) syn_counter;
     register<bit<32>>(1) ack_counter;
-    register<bit<32>>(3) dns_query;
-
-    
-
-    
-    bit<32>syn_limit;
+    register<bit<32>>(1) udp_counter;
+    register<bit<32>>(1) udp_limit;
+    register<bit<32>>(1) syn_limit;
 
 
   
@@ -192,6 +189,12 @@ control MyIngress(inout headers hdr,
         ack_counter.write(0,tmp_ack+1);
     }
 
+    action update_udp(){
+        bit<32> tmp_udp;
+        udp_counter.read(tmp_udp,0);
+        udp_counter.write(0,tmp_udp+1);
+    }
+
 
     table count_syn{
         key={
@@ -215,6 +218,7 @@ control MyIngress(inout headers hdr,
         default_action = NoAction();
     }
 
+    /*
     action update_query(bit<32> sport){
         bit<32> tmp_dns;
         dns_query.read(tmp_dns,sport);
@@ -232,6 +236,8 @@ control MyIngress(inout headers hdr,
         }
         default_action = NoAction();
     }
+    */
+
 
     
     apply {
@@ -245,26 +251,40 @@ control MyIngress(inout headers hdr,
 
                 bit<32> tmp_ack;
                 bit<32>tmp_syn;
+                bit<32> tmp_limit;
+                syn_limit.read(tmp_limit,0);
                 ack_counter.read(tmp_ack,0);
                 syn_counter.read(tmp_syn,0);
-                if(tmp_syn-tmp_ack > 3){
+                if(tmp_syn-tmp_ack > tmp_limit){
                     drop();
                 }
 
+                /*
                 //DNS amplification
                 dns_table.apply();
                 bit<32> tmp_dns;
-                //dns_query.read(tmp_dns,(bit<32>)hdr.tcp.srcPort);
+                
+                dns_query.read(tmp_dns,(bit<32>)hdr.tcp.srcPort);
                 if(tmp_dns<=0){
                     //drop();
                 }
-                
+                */
                 
 
           
             }
             else if(hdr.udp.isValid()){
                 //do things
+                update_udp();
+                
+                bit<32> tmp_udp;
+                bit<32> tmp_udp_limit;
+                udp_limit.read(tmp_udp_limit,0);
+                udp_counter.read(tmp_udp,0);
+                if(tmp_udp>tmp_udp_limit){
+                    drop();
+                }
+
             }
         }
     }

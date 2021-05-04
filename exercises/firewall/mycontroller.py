@@ -171,8 +171,8 @@ def printCounter(p4info_helper, sw, counter_name, index):
                 counter.data.packet_count, counter.data.byte_count
             ))
 
+/* HANDLING packet_out packet rule */
 def writePOutRule(p4info_helper, ingress_sw, padding, sw_addr):
-    """ Install "handle packet_out packet" rule on switch"""
     if padding == 0: # send to another switch
         table_entry = p4info_helper.buildTableEntry(
             table_name = "MyIngress.pkt_out_table",

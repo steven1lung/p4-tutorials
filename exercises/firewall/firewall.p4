@@ -10,7 +10,7 @@ const bit<8>  TYPE_TCP  = 6;
 const bit<16> TYPE_LLDP = 0x88cc;
 const bit<16> TYPE_PIN = 0x88ce;
 const bit<16> TYPE_POUT = 0x88cf;
-
+const bit<9> CPU_PORT = 255;
 #define BLOOM_FILTER_ENTRIES 4096
 #define BLOOM_FILTER_BIT_WIDTH 1
 #define MAX_ID 1<<16
@@ -22,7 +22,7 @@ const bit<16> TYPE_POUT = 0x88cf;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
-
+typedef bit<16> mcast_group_t;
 
 header ethernet_t {
     macAddr_t dstAddr;
@@ -72,23 +72,23 @@ header udp_t{
     bit<16> checksum;
 }
 
-header lldp_t{
+header lldp_t{   /* add needed data*/
     bit<9> portID;
     bit<7> padding;
 }
 
+/* extend header to find out topology*/
+header packet_in_t{   
+    bit<9> sport;
+    bit<9> dport;
+    bit<6> padding;
+}
 
-#header packet_in_t{
-#    bit<9> sport;
-#    bit<9> dport;
-#    bit<6> padding;
-#}
-
-#header packet_out_t{
-#    bit<9> egress_port;
-#    bit<16> mcast;
-#    bit<7> padding;
-#}
+header packet_out_t{    
+    bit<9> egress_port;
+    bit<16> mcast;
+    bit<7> padding;
+}
 
 
 struct metadata {
@@ -100,6 +100,8 @@ struct headers {
     ipv4_t       ipv4;
     tcp_t        tcp;
     lldp_t       lldp;
+    packet_in_t  packet_in;
+    packet_out_t packet_out;
 }
 
 /*************************************************************************
@@ -112,8 +114,16 @@ parser MyParser(packet_in packet,
                 inout standard_metadata_t standard_metadata) {
 
     state start {
-        transition parse_ethernet;
+        transition select(standard_metadata.ingress_port){
+            CPU_PORT: parse_pkt_out;                
+            default: parse_ethernet;     /* topology known/* 
+        }
     }
+
+    state parse_pkt_out {
+        packet.extract(hdr.packet_out);
+        transition accept;
+   }
 
     state parse_ethernet {
         packet.extract(hdr.ethernet);
@@ -230,7 +240,7 @@ control MyIngress(inout headers hdr,
 
     action lldp_forward(macAddr_t swAddr){
         standard_metadata.egress_spec = hdr.packet_out.egress_port;
-        hdr.ether.setValid();
+        hdr.ethernet.setValid();
         hdr.lldp.setValid();
         hdr.ethernet.etherType = TYPE_LLDP;
         hdr.ethernet.srcAddr = swAddr;
@@ -243,6 +253,19 @@ control MyIngress(inout headers hdr,
         hdr.ethernet.srcAddr = swAddr;
     }
 
+    tabel pkt_out_table{
+        key = {
+            hdr.packet_out.padding: exact;
+        }
+        action = {
+            lldp_forward;
+            response_to_cpu;
+            NoAction;
+        }
+        size = 1024;
+        default_action = NoAction;
+    }
+    
     table count_syn{
         key={
             hdr.tcp.syn : exact;
@@ -342,10 +365,12 @@ control MyIngress(inout headers hdr,
                     drop();
                 }
             }    
-                //lldp handeling
+        }
          else if(hdr.lldp.isValid()){
                 pkt_in_table.apply();
-        }  
+         }
+         else if(hdr.packet_out.isValid()){
+            pkt_out_table_apply();
         }
     }
 }
@@ -394,7 +419,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
         packet.emit(hdr.lldp);
-        #packet.emit(hdr.packet_in);
+        packet.emit(hdr.packet_in);
     }
 }
 

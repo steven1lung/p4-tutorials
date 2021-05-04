@@ -71,7 +71,7 @@ header udp_t{
 }
 
 header dns_t{
-    bit<16> dlength;
+    #bit<16> dlength;
     bit<16> transid;
     bit<1>  dqr;
     bit<4>  dopcode;
@@ -87,7 +87,9 @@ header dns_t{
     bit<16> dancount;
     bit<16> dnscount;
     bit<16> darcount;
-    
+    bit<16> qname;
+    bit<16> qtype;
+    bit<16> qclass;
 }
 
 struct metadata {
@@ -236,12 +238,16 @@ control MyIngress(inout headers hdr,
 
     action dns_question(){
 	bit<32> tmp_dns;
+	#bit<32> hash_t;
+	#hash_t = (bit<32>)hdr.dns.transid % 101;
 	dns_count.read(tmp_dns,0);
 	dns_count.write(0,tmp_dns+1);
     }
 
     action dns_answer(){
 	bit<32> tmp_dns;
+	#bit<32> hash_t;
+	#hash_t = (bit<32>)hdr.dns.transid % 101;
 	dns_count.read(tmp_dns,0);
 	dns_count.write(0,tmp_dns-1);
     }
@@ -276,20 +282,21 @@ control MyIngress(inout headers hdr,
                     drop();
                 }
 
-                //DNS amplification
-		if(hdr.udp.isValid()){
-                  dns_table.apply();
-                  bit<32> tmp_dns;
-                  dns_count.read(tmp_dns,0);
-                  if(tmp_dns<=0){
-                      drop();
-                  }
-		}
-                
-                
 
           
             }
+	    //DNS amplification
+            if(hdr.dns.isValid()){
+                dns_table.apply();
+                bit<32> tmp_dns;
+                
+                #hash_t = (bit<32>)hdr.dns.transid % 101;
+                dns_count.read(tmp_dns,0);
+                if(tmp_dns<=0){
+                    drop();
+                }
+            }
+
         }
     }
 }
@@ -337,6 +344,8 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
+	packet.emit(hdr.udp);
+	packet.emit(hdr.dns);
     }
 }
 

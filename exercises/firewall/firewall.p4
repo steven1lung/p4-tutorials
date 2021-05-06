@@ -2,13 +2,16 @@
 #include <core.p4>
 #include <v1model.p4>
 
+
 /* CONSTANTS */
 
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<8>  TYPE_TCP  = 6;
+const bit<8>  TYPE_UDP = 17;
 
 #define BLOOM_FILTER_ENTRIES 4096
 #define BLOOM_FILTER_BIT_WIDTH 1
+#define MAX_ID 1<<16
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -17,6 +20,7 @@ const bit<8>  TYPE_TCP  = 6;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
+
 
 header ethernet_t {
     macAddr_t dstAddr;
@@ -59,6 +63,33 @@ header tcp_t{
     bit<16> urgentPtr;
 }
 
+header udp_t{
+    bit<16> usrcPort;
+    bit<16> udstPort;
+    bit<16> ulength;
+    bit<16> uchecksum;
+}
+
+header dns_t{
+    bit<16> dlength;
+    bit<16> transid;
+    bit<1>  dqr;
+    bit<4>  dopcode;
+    bit<1>  daa;
+    bit<1>  dtc;
+    bit<1>  drd;
+    bit<1>  dra;
+    bit<1>  dz;
+    bit<1>  dad;
+    bit<1>  dcd;
+    bit<4>  drcode;
+    bit<16> dqdcount;
+    bit<16> dancount;
+    bit<16> dnscount;
+    bit<16> darcount;
+    
+}
+
 struct metadata {
     /* empty */
 }
@@ -67,6 +98,8 @@ struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
     tcp_t        tcp;
+    udp_t        udp;
+    dns_t	 dns;
 }
 
 /*************************************************************************
@@ -94,12 +127,18 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol){
             TYPE_TCP: tcp;
+	        TYPE_UDP: udp;
             default: accept;
         }
     }
 
     state tcp {
        packet.extract(hdr.tcp);
+       transition accept;
+    }
+    state udp {
+       packet.extract(hdr.udp);
+       packet.extract(hdr.dns);
        transition accept;
     }
 }
@@ -121,31 +160,26 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
 
-    register<bit<BLOOM_FILTER_BIT_WIDTH>>(BLOOM_FILTER_ENTRIES) bloom_filter_1;
-    register<bit<BLOOM_FILTER_BIT_WIDTH>>(BLOOM_FILTER_ENTRIES) bloom_filter_2;
-    bit<32> reg_pos_one; bit<32> reg_pos_two;
-    bit<1> reg_val_one; bit<1> reg_val_two;
-    bit<1> direction;
+    
+    //added variables below 
 
+
+    register<bit<32>>(1) syn_counter;
+    register<bit<32>>(1) ack_counter;
+    register<bit<32>>(1) udp_counter;
+    register<bit<32>>(1) udp_limit;
+    register<bit<32>>(1) syn_limit;
+    register<bit<32>>(1) dns_count;
+
+    
+
+
+
+
+  
+    
     action drop() {
         mark_to_drop(standard_metadata);
-    }
-
-    action compute_hashes(ip4Addr_t ipAddr1, ip4Addr_t ipAddr2, bit<16> port1, bit<16> port2){
-       //Get register position
-       hash(reg_pos_one, HashAlgorithm.crc16, (bit<32>)0, {ipAddr1,
-                                                           ipAddr2,
-                                                           port1,
-                                                           port2,
-                                                           hdr.ipv4.protocol},
-                                                           (bit<32>)BLOOM_FILTER_ENTRIES);
-
-       hash(reg_pos_two, HashAlgorithm.crc32, (bit<32>)0, {ipAddr1,
-                                                           ipAddr2,
-                                                           port1,
-                                                           port2,
-                                                           hdr.ipv4.protocol},
-                                                           (bit<32>)BLOOM_FILTER_ENTRIES);
     }
 
     action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
@@ -168,49 +202,119 @@ control MyIngress(inout headers hdr,
         default_action = drop();
     }
 
-    action set_direction(bit<1> dir) {
-        direction = dir;
+    action update_syn (){
+        bit<32> tmp_syn;
+        syn_counter.read(tmp_syn,0);
+        syn_counter.write(0,tmp_syn+1);
     }
 
-    table check_ports {
-        key = {
-            standard_metadata.ingress_port: exact;
-            standard_metadata.egress_spec: exact;
+    action update_ack (){
+        bit<32> tmp_ack;
+        ack_counter.read(tmp_ack,0);
+        ack_counter.write(0,tmp_ack+1);
+    }
+
+    action update_udp(){
+        bit<32> tmp_udp;
+        udp_counter.read(tmp_udp,0);
+        udp_counter.write(0,tmp_udp+1);
+    }
+
+
+    table count_syn{
+        key={
+            hdr.tcp.syn : exact;
         }
-        actions = {
-            set_direction;
+        actions={
+            update_syn;
             NoAction;
         }
-        size = 1024;
         default_action = NoAction();
     }
+
+    table count_ack{
+        key={
+            hdr.tcp.ack : exact;
+        }
+        actions={
+            update_ack;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+
+    action dns_question(){
+        bit<32> tmp_dns;
+        //#bit<32> hash_t;
+        //#hash_t = (bit<32>)hdr.dns.transid % 101;
+        dns_count.read(tmp_dns,0);
+        dns_count.write(0,tmp_dns+1);
+    }
+
+    
+
+    action dns_answer(){
+        bit<32> tmp_dns;
+        //#bit<32> hash_t;
+	    //#hash_t = (bit<32>)hdr.dns.transid % 101;
+        dns_count.read(tmp_dns,0);
+        dns_count.write(0,tmp_dns-1);
+    }
+
+    table dns_table{
+        key={
+            hdr.dns.dqr : exact;
+        }
+        actions={
+            dns_question;
+            dns_answer;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+    
+
+
     
     apply {
         if (hdr.ipv4.isValid()){
             ipv4_lpm.apply();
             if (hdr.tcp.isValid()){
-                direction = 0; // default
-                if (check_ports.apply().hit) {
-                    // test and set the bloom filter
-                    if (direction == 0) {
-                        compute_hashes(hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.tcp.srcPort, hdr.tcp.dstPort);
-                    }
-                    else {
-                        compute_hashes(hdr.ipv4.dstAddr, hdr.ipv4.srcAddr, hdr.tcp.dstPort, hdr.tcp.srcPort);
-                    }
-                    // Packet comes from internal network
-                    if (direction == 0){
-                        // TODO: this packet is part of an outgoing TCP connection.
-                        //   We need to set the bloom filter if this is a SYN packet
-                        //   E.g. bloom_filter_1.write(<index>, <value>);
-                    }
-                    // Packet comes from outside
-                    else if (direction == 1){
-                        // TODO: this packet is part of an incomming TCP connection.
-                        //   We need to check if this packet is allowed to pass by reading the bloom filter
-                        //   E.g. bloom_filter_1.read(<value>, <index>);
-                    }
+                //syn flood
+                count_syn.apply();
+                count_ack.apply();
+
+                bit<32> tmp_ack;
+                bit<32>tmp_syn;
+                bit<32> tmp_limit;
+                syn_limit.read(tmp_limit,0);
+                ack_counter.read(tmp_ack,0);
+                syn_counter.read(tmp_syn,0);
+                if(tmp_syn-tmp_ack > tmp_limit){
+                    drop();
                 }
+            }
+            else if(hdr.udp.isValid()){
+
+                //DNS Amplification
+                dns_table.apply();
+                bit<32> tmp_dns;
+                dns_count.read(tmp_dns,0);
+                if(tmp_dns<=0){
+                    drop();
+                }
+
+                //UDP Flood
+                update_udp();
+                
+                bit<32> tmp_udp;
+                bit<32> tmp_udp_limit;
+                udp_limit.read(tmp_udp_limit,0);
+                udp_counter.read(tmp_udp,0);
+                if(tmp_udp>tmp_udp_limit){
+                    drop();
+                }
+
             }
         }
     }
@@ -255,10 +359,14 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 *************************************************************************/
 
 control MyDeparser(packet_out packet, in headers hdr) {
+
+
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
+        packet.emit(hdr.udp);
         packet.emit(hdr.tcp);
+        
     }
 }
 

@@ -14,8 +14,35 @@ import p4runtime_lib.bmv2
 from p4runtime_lib.switch import ShutdownAllSwitchConnections
 import p4runtime_lib.helper
 
+#import runtime_CLI
+import runtime_CLI
+
+
 SWITCH_TO_HOST_PORT = 1
 SWITCH_TO_SWITCH_PORT = 2
+
+def enum(type_name, *sequential, **named):
+    enums = dict(list(zip(sequential, list(range(len(sequential))))), **named)
+    reverse = dict((value, key) for key, value in enums.items())
+
+    @staticmethod
+    def to_str(x):
+        return reverse[x]
+    enums['to_str'] = to_str
+
+    @staticmethod
+    def from_str(x):
+        return enums[x]
+
+    enums['from_str'] = from_str
+    return type(type_name, (), enums)
+
+
+PreType = enum('PreType', 'none', 'SimplePre', 'SimplePreLAG')
+MeterType = enum('MeterType', 'packets', 'bytes')
+TableType = enum('TableType', 'simple', 'indirect', 'indirect_ws')
+ResType = enum('ResType', 'table', 'action_prof', 'action', 'meter_array',
+               'counter_array', 'register_array', 'parse_vset')
 
 
 def writeTunnelRules(p4info_helper, ingress_sw, egress_sw, tunnel_id,
@@ -154,55 +181,86 @@ def printGrpcError(e):
 def main(p4info_file_path, bmv2_file_path):
     # Instantiate a P4Runtime helper from the p4info file
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info_file_path)
-
+    time=0
     try:
         # Create a switch connection object for s1 and s2;
         # this is backed by a P4Runtime gRPC connection.
         # Also, dump all P4Runtime messages sent to switch to given txt files.
-        s1 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
-            name='s1',
-            address='127.0.0.1:50051',
-            device_id=0,
-            proto_dump_file='logs/s1-p4runtime-requests.txt')
-        s2 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
-            name='s2',
-            address='127.0.0.1:50052',
-            device_id=1,
-            proto_dump_file='logs/s2-p4runtime-requests.txt')
+        #s1 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
+        #    name='s1',
+        #    address='127.0.0.1:50051',
+        #    device_id=0,
+        #    proto_dump_file='logs/s1-p4runtime-requests2.txt')
+        #s2 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
+         #   name='s2',
+        #    address='127.0.0.1:50052',
+        #    device_id=1,
+         #   proto_dump_file='logs/s2-p4runtime-requests2.txt')
 
         # Send master arbitration update message to establish this controller as
         # master (required by P4Runtime before performing any other write operation)
-        s1.MasterArbitrationUpdate()
-        s2.MasterArbitrationUpdate()
+       # s1.MasterArbitrationUpdate()
+       # s2.MasterArbitrationUpdate()
 
         # Install the P4 program on the switches
-        s1.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
-                                       bmv2_json_file_path=bmv2_file_path)
-        print ("Installed P4 Program using SetForwardingPipelineConfig on s1")
-        s2.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
-                                       bmv2_json_file_path=bmv2_file_path)
-        print ("Installed P4 Program using SetForwardingPipelineConfig on s2")
+        #s1.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
+                        #               bmv2_json_file_path=bmv2_file_path)
+        #print ("Installed P4 Program using SetForwardingPipelineConfig on s1")
+        #s2.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
+                         #              bmv2_json_file_path=bmv2_file_path)
+        #print ("Installed P4 Program using SetForwardingPipelineConfig on s2")
 
         # Write the rules that tunnel traffic from h1 to h2
-        writeTunnelRules(p4info_helper, ingress_sw=s1, egress_sw=s2, tunnel_id=100,
-                         dst_eth_addr="08:00:00:00:02:22", dst_ip_addr="10.0.2.2")
+        #writeTunnelRules(p4info_helper, ingress_sw=s1, egress_sw=s2, tunnel_id=100,
+         #                dst_eth_addr="08:00:00:00:02:22", dst_ip_addr="10.0.2.2")
 
         # Write the rules that tunnel traffic from h2 to h1
-        writeTunnelRules(p4info_helper, ingress_sw=s2, egress_sw=s1, tunnel_id=200,
-                         dst_eth_addr="08:00:00:00:01:11", dst_ip_addr="10.0.1.1")
+        #writeTunnelRules(p4info_helper, ingress_sw=s2, egress_sw=s1, tunnel_id=200,
+        #                 dst_eth_addr="08:00:00:00:01:11", dst_ip_addr="10.0.1.1")
 
         # TODO Uncomment the following two lines to read table entries from s1 and s2
-        readTableRules(p4info_helper, s1)
-        readTableRules(p4info_helper, s2)
+        #readTableRules(p4info_helper, s1)
+        #readTableRules(p4info_helper, s2)
 
+        #setup runtime_CLI
+
+        
+
+        standard_client, mc_client = runtime_CLI.thrift_connect(
+            'localhost', 9090,
+            runtime_CLI.RuntimeAPI.get_thrift_services(1)
+        )
+        runtime_CLI.load_json_config(standard_client, None)
+        
+        run=runtime_CLI.RuntimeAPI(1,standard_client,mc_client)
+
+        run.do_register_write("syn_limit 0 3")
+        run.do_register_write("udp_limit 0 3")
+        
+            
         # Print the tunnel counters every 2 seconds
         while True:
-            sleep(2)
-            print ('\n----- Reading tunnel counters -----')
-            printCounter(p4info_helper, s1, "MyIngress.ingressTunnelCounter", 100)
-            printCounter(p4info_helper, s2, "MyIngress.egressTunnelCounter", 100)
-            printCounter(p4info_helper, s2, "MyIngress.ingressTunnelCounter", 200)
-            printCounter(p4info_helper, s1, "MyIngress.egressTunnelCounter", 200)
+            #run.do_register_write("packet_limit 0 2")
+            #print(run.do_register_read("packet_limit 0"))
+
+            #run.do_register_write("packet_limit 0 4")
+            #print(run.do_register_read("packet_limit 0"))
+            if(time==5):
+                run.do_register_reset("syn_count 0")
+                run.do_register_reset("ack_count 0")
+                run.do_register_reset("udp_counter 0")
+                #run.do_register_write("syn_counter 0 100")
+            if(time==3600):
+                run.do_register_reset("dns_query 0")
+            time+=5
+            sleep(5)
+          #  print ('\n----- Reading packet_limit -----')
+            #printCounter(p4info_helper, s1, "MyIngress.ingressTunnelCounter", 100)
+            #printCounter(p4info_helper, s2, "MyIngress.egressTunnelCounter", 100)
+            #printCounter(p4info_helper, s2, "MyIngress.ingressTunnelCounter", 200)
+            #printCounter(p4info_helper, s1, "MyIngress.egressTunnelCounter", 200)
+            
+            
 
     except KeyboardInterrupt:
         print (" Shutting down.")
@@ -215,10 +273,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='P4Runtime Controller')
     parser.add_argument('--p4info', help='p4info proto in text format from p4c',
                         type=str, action="store", required=False,
-                        default='./build/advanced_tunnel.p4.p4info.txt')
+                        default='./build/firewall.p4.p4info.txt')
     parser.add_argument('--bmv2-json', help='BMv2 JSON file from p4c',
                         type=str, action="store", required=False,
-                        default='./build/advanced_tunnel.json')
+                        default='./build/firewall.json')
     args = parser.parse_args()
 
     if not os.path.exists(args.p4info):

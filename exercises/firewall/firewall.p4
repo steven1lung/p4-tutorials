@@ -71,7 +71,7 @@ header udp_t{
 }
 
 header dns_t{
-    #bit<16> dlength;
+    //bit<16> dlength;
     bit<16> transid;
     bit<1>  dqr;
     bit<4>  dopcode;
@@ -168,7 +168,7 @@ control MyIngress(inout headers hdr,
 
     register<bit<32>>(1) syn_counter;
     register<bit<32>>(1) ack_counter;
-    register<bit<32>>(1) dns_count;
+    register<bit<32>>(512) dns_count;
 
     
 
@@ -236,23 +236,23 @@ control MyIngress(inout headers hdr,
         default_action = NoAction();
     }
 
-    action dns_question(){
+    /*action dns_question(){
 	bit<32> tmp_dns;
-	#bit<32> hash_t;
-	#hash_t = (bit<32>)hdr.dns.transid % 101;
+	bit<32> hash_t;
+	hash_t = (bit<32>)hdr.dns.transid % 101;
 	dns_count.read(tmp_dns,0);
 	dns_count.write(0,tmp_dns+1);
-    }
+    }*/
 
-    action dns_answer(){
+    /*action dns_answer(){
 	bit<32> tmp_dns;
-	#bit<32> hash_t;
-	#hash_t = (bit<32>)hdr.dns.transid % 101;
+	bit<32> hash_t;
+	hash_t = (bit<32>)hdr.dns.transid % 101;
 	dns_count.read(tmp_dns,0);
 	dns_count.write(0,tmp_dns-1);
-    }
+    }*/
 
-    table dns_table{
+    /*table dns_table{
         key={
             hdr.dns.dqr : exact;
         }
@@ -262,7 +262,7 @@ control MyIngress(inout headers hdr,
             NoAction;
         }
         default_action = NoAction();
-    }
+    }*/
 
     
     apply {
@@ -287,14 +287,35 @@ control MyIngress(inout headers hdr,
             }
 	    //DNS amplification
             if(hdr.dns.isValid()){
-                dns_table.apply();
-                bit<32> tmp_dns;
+		if(hdr.dns.dqr == 0){
+                    bit<32> tmp;
+		    bit<32> ipc;
+                    ipc = hdr.ipv4.srcAddr % 512;
+		    ipc = ipc % 64;
+		    ipc = ipc << 10;
+		    bit<32> index;
+		    index = ipc + ((bit<32>)hdr.dns.transid % 512);
+		    dns_count.read(tmp,index);
+		    dns_count.write(index,tmp+1);
+
+		}
+                if(hdr.dns.dqr == 1){
+		    bit<32> ipc;
+		    ipc = hdr.ipv4.srcAddr % 512;
+                    ipc = ipc % 64;
+                    ipc = ipc << 10;
+                    bit<32> index;
+                    index = ipc + ((bit<32>)hdr.dns.transid % 512);                		   bit<32> tmp;
+		    dns_count.read(tmp,index);
+		    if(tmp > 0){
+			dns_count.write(index,tmp-1);
+		    }
+		    else{
+			dns_count.write(index,0);
+			drop();
+		    } 
+                }   
                 
-                #hash_t = (bit<32>)hdr.dns.transid % 101;
-                dns_count.read(tmp_dns,0);
-                if(tmp_dns<=0){
-                    drop();
-                }
             }
 
         }

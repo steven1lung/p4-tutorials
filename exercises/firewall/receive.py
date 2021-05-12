@@ -39,6 +39,10 @@ def handle_pkt(pkt):
         pkt.show2()
     #    hexdump(pkt)
         sys.stdout.flush()
+    if UDP in pkt and pkt[UDP].dport == 53:
+        print("got a packet")
+        pkt.show2()
+        sys.stdout.flush()
 
 
 def main():

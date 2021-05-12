@@ -33,8 +33,9 @@ def main():
     print(("sending on interface %s to %s" % (iface, str(addr))))
     pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
     #pkt = pkt / IP(dst=addr) / UDP(dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1) 
-    pkt = pkt / IP(dst=addr) / UDP(dport=53)
-    #pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / sys.argv[2]
+    #pkt = pkt / IP(dst=addr) / UDP(sport=53)
+    pkt = pkt / IP(dst=addr) / UDP(dport = 53) /sys.argv[2]
+    pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / sys.argv[2]
     pkt.show2()
     sendp(pkt, iface=iface, verbose=False)
 

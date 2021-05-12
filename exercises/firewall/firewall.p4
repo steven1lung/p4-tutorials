@@ -171,7 +171,8 @@ control MyIngress(inout headers hdr,
     register<bit<32>>(1) syn_limit;
     register<bit<32>>(1) dns_count;
 
-    
+    register<bit<32>>(1) total_packet;
+    register<bit<32>>(1) dropped;
 
 
 
@@ -280,6 +281,9 @@ control MyIngress(inout headers hdr,
         if (hdr.ipv4.isValid()){
             ipv4_lpm.apply();
             if (hdr.tcp.isValid()){
+                bit<32> tmp_totalpacket;
+                total_packet.read(tmp_totalpacket,0);
+                total_packet.write(0,tmp_totalpacket+1);
                 //syn flood
                 count_syn.apply();
                 count_ack.apply();
@@ -292,16 +296,24 @@ control MyIngress(inout headers hdr,
                 syn_counter.read(tmp_syn,0);
                 if(tmp_syn-tmp_ack > tmp_limit){
                     drop();
+                    bit<32> drop_tmp;
+                    dropped.read(drop_tmp,0);
+                    dropped.write(0,drop_tmp+1);
                 }
             }
             else if(hdr.udp.isValid()){
-
+                bit<32> tmp_totalpacket;
+                total_packet.read(tmp_totalpacket,0);
+                total_packet.write(0,tmp_totalpacket+1);
                 //DNS Amplification
                 dns_table.apply();
                 bit<32> tmp_dns;
                 dns_count.read(tmp_dns,0);
                 if(tmp_dns<=0){
                     drop();
+                    bit<32> drop_tmp;
+                    dropped.read(drop_tmp,0);
+                    dropped.write(0,drop_tmp+1);
                 }
 
                 //UDP Flood
@@ -313,6 +325,9 @@ control MyIngress(inout headers hdr,
                 udp_counter.read(tmp_udp,0);
                 if(tmp_udp>tmp_udp_limit){
                     drop();
+                    bit<32> drop_tmp;
+                    dropped.read(drop_tmp,0);
+                    dropped.write(0,drop_tmp+1);
                 }
 
             }

@@ -99,7 +99,7 @@ struct headers {
     ipv4_t       ipv4;
     tcp_t        tcp;
     udp_t        udp;
-    dns_t	 dns;
+    dns_t	     dns;
 }
 
 /*************************************************************************
@@ -381,7 +381,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ipv4);
         packet.emit(hdr.udp);
         packet.emit(hdr.tcp);
-        
+        packet.emit(hdr.dns);
     }
 }
 

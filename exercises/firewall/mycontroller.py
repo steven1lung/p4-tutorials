@@ -234,8 +234,8 @@ def main(p4info_file_path, bmv2_file_path):
         
         run=runtime_CLI.RuntimeAPI(1,standard_client,mc_client)
 
-        run.do_register_write("syn_limit 0 3")
-        run.do_register_write("udp_limit 0 3")
+        run.do_register_write("syn_limit 0 10")
+        run.do_register_write("udp_limit 0 10")
         
             
         # Print the tunnel counters every 2 seconds
@@ -256,7 +256,6 @@ def main(p4info_file_path, bmv2_file_path):
                 run.do_register_reset("ack_counter")
                 run.do_register_reset("udp_counter")
                 #run.do_register_write("syn_counter 0 100")
-                print("reseted counters")
             if(time==3600):
                 run.do_register_reset("dns_query 0")
 

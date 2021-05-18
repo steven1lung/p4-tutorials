@@ -249,8 +249,14 @@ def main(p4info_file_path, bmv2_file_path):
             print(now.strftime("%H:%M:%S"))
             print("total packets : ",end="")
             run.do_register_read("total_packet 0")
-            print("packets dropped : ",end="")
+            print("total packets dropped : ",end="")
             run.do_register_read("dropped 0")
+            print("time slice packet accepted : ")
+            print("\tTCP packets : ",end="")
+            run.do_register_read("syn_counter 0")
+            print("\tUDP packets : ",end="")
+            run.do_register_read("udp_counter 0")
+
             if(time%5==0):
                 run.do_register_reset("syn_counter")
                 run.do_register_reset("ack_counter")

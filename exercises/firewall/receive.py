@@ -36,12 +36,16 @@ class IPOption_MRI(IPOption):
 def handle_pkt(pkt):
     if TCP in pkt and pkt[TCP].dport == 1234:
         print("got a packet")
-        pkt.show2()
+        #pkt.show2()
     #    hexdump(pkt)
+        #if(not cmp(pkt.load,"b\'hello\'")):
+        pkt.show2()
+        #print(pkt.load)
+        #print("b\'hello\'")
         sys.stdout.flush()
     if UDP in pkt and pkt[UDP].dport == 53:
         print("got a packet")
-        pkt.show2()
+        #pkt.show2()
         sys.stdout.flush()
 
 

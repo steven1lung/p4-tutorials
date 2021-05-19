@@ -234,8 +234,8 @@ def main(p4info_file_path, bmv2_file_path):
         
         run=runtime_CLI.RuntimeAPI(1,standard_client,mc_client)
 
-        run.do_register_write("syn_limit 0 10")
-        run.do_register_write("udp_limit 0 10")
+        run.do_register_write("syn_limit 0 5")
+        run.do_register_write("udp_limit 0 5")
         
             
         # Print the tunnel counters every 2 seconds

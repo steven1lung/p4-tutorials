@@ -7,7 +7,7 @@ import struct
 
 from scapy.all import sendp, send, get_if_list, get_if_hwaddr
 from scapy.all import Packet
-from scapy.all import Ether, IP, UDP, TCP, DNS
+from scapy.all import Ether, IP, UDP, TCP, DNS, ICMP
 
 def get_if():
     ifs=get_if_list()
@@ -32,9 +32,10 @@ def main():
 
     print(("sending on interface %s to %s" % (iface, str(addr))))
     pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
-    pkt_dns = pkt / IP(dst=addr) / UDP(dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1) 
-    pkt_udp = pkt / IP(dst=addr) / UDP(sport=53)
-    pkt_tcp = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / sys.argv[2]
+    pkt_dns = pkt / IP(dst=addr) / UDP(dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1) / "attack"
+    pkt_udp = pkt / IP(dst=addr) / UDP(sport=53)/ "attack"
+    pkt_tcp = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / "attack"
+    pkt_icmp = pkt /IP(dst=addr) / ICMP(type=0) / "attack"
     for pac in range(1000):
         sendp(pkt_dns, iface=iface, verbose=False)
         sendp(pkt_udp, iface=iface, verbose=False)

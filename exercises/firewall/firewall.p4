@@ -6,9 +6,11 @@
 /* CONSTANTS */
 
 const bit<16> TYPE_IPV4 = 0x800;
-const bit<8>  TYPE_TCP  = 6;
-const bit<8>  TYPE_UDP = 17;
 const bit<16> TYPE_LLDP = 0x88cc;
+const bit<8>  TYPE_ICMP = 0x01;
+const bit<8>  TYPE_TCP  = 0x06;
+const bit<8>  TYPE_UDP = 0x11;
+
 
 #define BLOOM_FILTER_ENTRIES 4096
 #define BLOOM_FILTER_BIT_WIDTH 1
@@ -91,6 +93,13 @@ header dns_t{
     
 }
 
+header icmp_t{
+    bit<8> type;
+    bit<8> code;
+    bit<16> checksum;
+    bit<32> rest;
+}
+
 struct metadata {
     /* empty */
 }
@@ -98,6 +107,7 @@ struct metadata {
 struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
+    icmp_t       icmp;
     tcp_t        tcp;
     udp_t        udp;
     dns_t	     dns;
@@ -129,6 +139,7 @@ parser MyParser(packet_in packet,
         transition select(hdr.ipv4.protocol){
             TYPE_TCP: tcp;
 	        TYPE_UDP: udp;
+            TYPE_ICMP: icmp;
             default: accept;
         }
     }
@@ -141,6 +152,11 @@ parser MyParser(packet_in packet,
        packet.extract(hdr.udp);
        packet.extract(hdr.dns);
        transition accept;
+    }
+
+    state icmp{
+        packet.extract(hdr.icmp);
+        transition accept;
     }
 }
 
@@ -168,9 +184,9 @@ control MyIngress(inout headers hdr,
     register<bit<32>>(1) syn_counter;
     register<bit<32>>(1) ack_counter;
     register<bit<32>>(1) udp_counter;
-    register<bit<32>>(1) udp_limit;
-    register<bit<32>>(1) syn_limit;
+    register<bit<32>>(1) icmp_counter;
     register<bit<32>>(1) dns_count;
+    register<bit<32>>(1) limit;
 
     register<bit<32>>(1) total_packet;
     register<bit<32>>(1) dropped;
@@ -222,6 +238,11 @@ control MyIngress(inout headers hdr,
         udp_counter.write(0,tmp_udp+1);
     }
 
+    action update_icmp(){
+        bit<32> tmp_icmp;
+        icmp_counter.read(tmp_icmp,0);
+        icmp_counter.write(0,tmp_icmp+1);
+    }
 
     table count_syn{
         key={
@@ -292,7 +313,7 @@ control MyIngress(inout headers hdr,
                 bit<32> tmp_ack;
                 bit<32>tmp_syn;
                 bit<32> tmp_limit;
-                syn_limit.read(tmp_limit,0);
+                limit.read(tmp_limit,0);
                 ack_counter.read(tmp_ack,0);
                 syn_counter.read(tmp_syn,0);
                 if(tmp_syn-tmp_ack > tmp_limit){
@@ -322,7 +343,7 @@ control MyIngress(inout headers hdr,
                 
                 bit<32> tmp_udp;
                 bit<32> tmp_udp_limit;
-                udp_limit.read(tmp_udp_limit,0);
+                limit.read(tmp_udp_limit,0);
                 udp_counter.read(tmp_udp,0);
                 if(tmp_udp>tmp_udp_limit){
                     drop();
@@ -331,6 +352,20 @@ control MyIngress(inout headers hdr,
                     dropped.write(0,drop_tmp+1);
                 }
 
+            }
+            else if (hdr.icmp.isValid()){
+                //icmp flood
+                update_icmp();
+                bit<32> tmp_icmp;
+                bit<32> tmp_icmp_limit;
+                limit.read(tmp_icmp_limit,0);
+                icmp_counter.read(tmp_icmp,0);
+                if(tmp_icmp>tmp_icmp_limit){
+                    drop();
+                    bit<32> drop_tmp;
+                    dropped.read(drop_tmp,0);
+                    dropped.write(0,drop_tmp+1);
+                }
             }
         }
     }
@@ -380,6 +415,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
+        packet.emit(hdr.icmp);
         packet.emit(hdr.udp);
         packet.emit(hdr.tcp);
         packet.emit(hdr.dns);

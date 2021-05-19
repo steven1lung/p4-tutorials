@@ -6,7 +6,7 @@ import os
 from scapy.all import sniff, sendp, hexdump, get_if_list, get_if_hwaddr
 from scapy.all import Packet, IPOption
 from scapy.all import ShortField, IntField, LongField, BitField, FieldListField, FieldLenField
-from scapy.all import IP, TCP, UDP, Raw
+from scapy.all import IP, TCP, UDP, Raw , ICMP
 from scapy.layers.inet import _IPOption_HDR
 
 def get_if():
@@ -45,7 +45,11 @@ def handle_pkt(pkt):
         sys.stdout.flush()
     if UDP in pkt and pkt[UDP].dport == 53:
         print("got a packet")
-        #pkt.show2()
+        pkt.show2()
+        sys.stdout.flush()
+    if ICMP in pkt and pkt[ICMP].type==0:
+        print("got a packet")
+        pkt.show2()
         sys.stdout.flush()
 
 

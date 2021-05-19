@@ -35,7 +35,7 @@ def main():
     #pkt = pkt / IP(dst=addr) / UDP(dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1) 
     #pkt = pkt / IP(dst=addr) / UDP(sport=53)
     #pkt = pkt / IP(dst=addr) / UDP(sport=random.randint(49152,65535),dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1)
-    pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / sys.argv[2]
+    pkt = pkt /IP(dst=addr) / ICMP(type=0) / sys.argv[2]
     sendp(pkt, iface=iface, verbose=False)
     #pkt.show2()
     #sendp(pkt, iface=iface, verbose=False)

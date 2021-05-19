@@ -234,8 +234,8 @@ def main(p4info_file_path, bmv2_file_path):
         
         run=runtime_CLI.RuntimeAPI(1,standard_client,mc_client)
 
-        run.do_register_write("syn_limit 0 5")
-        run.do_register_write("udp_limit 0 5")
+
+        run.do_register_write("limit 0 5")
         
             
         # Print the tunnel counters every 2 seconds
@@ -247,7 +247,7 @@ def main(p4info_file_path, bmv2_file_path):
             #print(run.do_register_read("packet_limit 0"))
             now=datetime.now()
             print(now.strftime("%H:%M:%S"))
-            print("total packets : ",end="")
+            print("total packets handled : ",end="")
             run.do_register_read("total_packet 0")
             print("total packets dropped : ",end="")
             run.do_register_read("dropped 0")
@@ -256,11 +256,14 @@ def main(p4info_file_path, bmv2_file_path):
             run.do_register_read("syn_counter 0")
             print("\tUDP packets : ",end="")
             run.do_register_read("udp_counter 0")
+            print("\tICMP packets: ",end="")
+            run.do_register_read("icmp_counter 0")
 
             if(time%5==0):
                 run.do_register_reset("syn_counter")
                 run.do_register_reset("ack_counter")
                 run.do_register_reset("udp_counter")
+                run.do_register_reset("icmp_counter")
                 #run.do_register_write("syn_counter 0 100")
             if(time==3600):
                 run.do_register_reset("dns_query 0")

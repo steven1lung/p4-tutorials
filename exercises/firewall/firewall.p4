@@ -185,6 +185,7 @@ control MyIngress(inout headers hdr,
     register<bit<32>>(1) ack_counter;
     register<bit<32>>(1) udp_counter;
     register<bit<32>>(1) icmp_counter;
+    register<bit<32>>(1) synack_counter;
     register<bit<32>>(1) dns_count;
     register<bit<32>>(1) limit;
 
@@ -244,6 +245,12 @@ control MyIngress(inout headers hdr,
         icmp_counter.write(0,tmp_icmp+1);
     }
 
+    action update_synack(){
+        bit<32> tmp_synack;
+        synack_counter.read(tmp_synack,0);
+        synack_counter.write(0,tmp_synack+1);
+    }
+
     table count_syn{
         key={
             hdr.tcp.syn : exact;
@@ -261,6 +268,18 @@ control MyIngress(inout headers hdr,
         }
         actions={
             update_ack;
+            NoAction;
+        }
+        default_action = NoAction();
+    }
+
+    table count_synack{
+        key={
+            hdr.tcp.syn : exact;
+            hdr.tcp.ack : exact;
+        }
+        actions={
+            update_synack;
             NoAction;
         }
         default_action = NoAction();
@@ -306,14 +325,29 @@ control MyIngress(inout headers hdr,
                 bit<32> tmp_totalpacket;
                 total_packet.read(tmp_totalpacket,0);
                 total_packet.write(0,tmp_totalpacket+1);
+
+                //syn_ack
+                count_synack.apply();
+                bit<32> tmp_synack;
+                bit<32> tmp_limit;
+                limit.read(tmp_limit,0);
+
+                synack_counter.read(tmp_synack,0);
+                if(tmp_synack>tmp_limit){
+                    drop();
+                    bit<32> drop_tmp;
+                    dropped.read(drop_tmp,0);
+                    dropped.write(0,drop_tmp+1);
+                }
+
+
                 //syn flood
                 count_syn.apply();
                 count_ack.apply();
 
                 bit<32> tmp_ack;
                 bit<32>tmp_syn;
-                bit<32> tmp_limit;
-                limit.read(tmp_limit,0);
+                
                 ack_counter.read(tmp_ack,0);
                 syn_counter.read(tmp_syn,0);
                 if(tmp_syn-tmp_ack > tmp_limit){
@@ -322,6 +356,8 @@ control MyIngress(inout headers hdr,
                     dropped.read(drop_tmp,0);
                     dropped.write(0,drop_tmp+1);
                 }
+
+                
             }
             else if(hdr.udp.isValid()){
                 bit<32> tmp_totalpacket;
@@ -354,6 +390,9 @@ control MyIngress(inout headers hdr,
 
             }
             else if (hdr.icmp.isValid()){
+                bit<32> tmp_totalpacket;
+                total_packet.read(tmp_totalpacket,0);
+                total_packet.write(0,tmp_totalpacket+1);
                 //icmp flood
                 update_icmp();
                 bit<32> tmp_icmp;

@@ -20,6 +20,15 @@
       "action_params":{ }
     },
     {
+      "table": "MyIngress.count_synack",
+      "match": {
+        "hdr.tcp.ack": 1,
+        "hdr.tcp.syn": 1
+      },
+      "action_name" : "MyIngress.update_synack",
+      "action_params":{ }
+    },
+    {
       "table": "MyIngress.dns_table",
       "match": {
         "hdr.dns.dqr": 0

@@ -264,6 +264,7 @@ def main(p4info_file_path, bmv2_file_path):
                 run.do_register_reset("ack_counter")
                 run.do_register_reset("udp_counter")
                 run.do_register_reset("icmp_counter")
+                run.do_register_reset("synack_counter")
                 #run.do_register_write("syn_counter 0 100")
             if(time==3600):
                 run.do_register_reset("dns_query 0")

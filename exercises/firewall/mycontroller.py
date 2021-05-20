@@ -4,6 +4,7 @@ import grpc
 import os
 import sys
 from time import sleep
+from datetime import datetime
 from scapy.contrib import lldp
 # Import P4Runtime lib from parent utils dir
 # Probably there's a better way of doing this.
@@ -171,7 +172,6 @@ def printCounter(p4info_helper, sw, counter_name, index):
                 counter.data.packet_count, counter.data.byte_count
             ))
 
-/* HANDLING packet_out packet rule */
 def writePOutRule(p4info_helper, ingress_sw, padding, sw_addr):
     if padding == 0: # send to another switch
         table_entry = p4info_helper.buildTableEntry(
@@ -195,6 +195,7 @@ def writePOutRule(p4info_helper, ingress_sw, padding, sw_addr):
                 "swAddr": sw_addr
             })
         ingress_sw.WriteTableEntry(table_entry)
+
 
 def printGrpcError(e):
     print ("gRPC Error:", e.details(),)
@@ -259,7 +260,8 @@ def main(p4info_file_path, bmv2_file_path):
         
         run=runtime_CLI.RuntimeAPI(1,standard_client,mc_client)
 
-        
+
+        run.do_register_write("limit 0 5")
         
             
         # Print the tunnel counters every 2 seconds
@@ -269,12 +271,31 @@ def main(p4info_file_path, bmv2_file_path):
 
             #run.do_register_write("packet_limit 0 4")
             #print(run.do_register_read("packet_limit 0"))
-            if(time==5):
-                run.do_register_reset("syn_count 0")
-                run.do_register_reset("ack_count 0")
+            now=datetime.now()
+            print(now.strftime("%H:%M:%S"))
+            print("total packets handled : ",end="")
+            run.do_register_read("total_packet 0")
+            print("total packets dropped : ",end="")
+            run.do_register_read("dropped 0")
+            print("time slice packet accepted : ")
+            print("\tTCP packets : ",end="")
+            run.do_register_read("syn_counter 0")
+            print("\tUDP packets : ",end="")
+            run.do_register_read("udp_counter 0")
+            print("\tICMP packets: ",end="")
+            run.do_register_read("icmp_counter 0")
+
+            if(time%5==0):
+                run.do_register_reset("syn_counter")
+                run.do_register_reset("ack_counter")
+                run.do_register_reset("udp_counter")
+                run.do_register_reset("icmp_counter")
+                run.do_register_reset("synack_counter")
                 #run.do_register_write("syn_counter 0 100")
             if(time==3600):
                 run.do_register_reset("dns_query 0")
+
+            print("\n")
             time+=5
             sleep(5)
           #  print ('\n----- Reading packet_limit -----')

@@ -5,6 +5,10 @@ import os
 import sys
 from time import sleep
 from datetime import datetime
+<<<<<<< HEAD
+=======
+from scapy.contrib import lldp
+>>>>>>> lldp_new
 # Import P4Runtime lib from parent utils dir
 # Probably there's a better way of doing this.
 sys.path.append(
@@ -170,6 +174,31 @@ def printCounter(p4info_helper, sw, counter_name, index):
                 sw.name, counter_name, index,
                 counter.data.packet_count, counter.data.byte_count
             ))
+
+def writePOutRule(p4info_helper, ingress_sw, padding, sw_addr):
+    if padding == 0: # send to another switch
+        table_entry = p4info_helper.buildTableEntry(
+            table_name = "MyIngress.pkt_out_table",
+            match_fields = {
+                "hdr.packet_out.padding": padding
+            },
+            action_name = "MyIngress.lldp_forward",
+            action_params={
+                "swAddr": sw_addr
+            })
+        ingress_sw.WriteTableEntry(table_entry)
+    elif padding == 1: # send back to controller
+        table_entry = p4info_helper.buildTableEntry(
+            table_name = "MyIngress.pkt_out_table",
+            match_fields = {
+                "hdr.packet_out.padding": padding
+            },
+            action_name = "MyIngress.response_to_cpu",
+            action_params={
+                "swAddr": sw_addr
+            })
+        ingress_sw.WriteTableEntry(table_entry)
+
 
 def printGrpcError(e):
     print ("gRPC Error:", e.details(),)

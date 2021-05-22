@@ -7,6 +7,9 @@
 
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<16> TYPE_LLDP = 0x88cc;
+const bit<16> TYPE_PIN = 0x88ce;
+const bit<16> TYPE_POUT = 0x88cf;
+const bit<9>  CPU_PORT = 255;
 const bit<8>  TYPE_ICMP = 0x01;
 const bit<8>  TYPE_TCP  = 0x06;
 const bit<8>  TYPE_UDP = 0x11;
@@ -23,7 +26,7 @@ const bit<8>  TYPE_UDP = 0x11;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
-
+typedef bit<16> mcast_group_t;
 
 header ethernet_t {
     macAddr_t dstAddr;
@@ -100,6 +103,23 @@ header icmp_t{
     bit<32> rest;
 }
 
+header lldp_t{   
+    bit<9> port;
+    bit<7> padding;
+}
+
+header packet_in_t{   
+    bit<9> sport;
+    bit<9> dport;
+    bit<6> padding;
+}
+
+header packet_out_t{    
+    bit<9> egress_port;
+    bit<16> mcast;
+    bit<7> padding;
+}
+
 struct metadata {
     /* empty */
 }
@@ -111,6 +131,9 @@ struct headers {
     tcp_t        tcp;
     udp_t        udp;
     dns_t	     dns;
+    lldp_t       lldp;
+    packet_in_t  packet_in;
+    packet_out_t packet_out;
 }
 
 /*************************************************************************
@@ -123,13 +146,22 @@ parser MyParser(packet_in packet,
                 inout standard_metadata_t standard_metadata) {
 
     state start {
-        transition parse_ethernet;
+        transition select(standard_metadata.ingress_port){
+            CPU_PORT: parse_pkt_out;                
+            default: parse_ethernet;     
+        }
     }
+    
+    state parse_pkt_out {
+        packet.extract(hdr.packet_out);
+        transition accept;
+   }
 
     state parse_ethernet {
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV4: parse_ipv4;
+            TYPE_LLDP: parse_lldp;
             default: accept;
         }
     }
@@ -156,6 +188,11 @@ parser MyParser(packet_in packet,
 
     state icmp{
         packet.extract(hdr.icmp);
+        transition accept;
+    }
+    
+    state parse_lldp{
+        packet.extract(hdr.lldp);
         transition accept;
     }
 }
@@ -315,6 +352,53 @@ control MyIngress(inout headers hdr,
         default_action = NoAction();
     }
     
+    action send_to_cpu(macAddr_t swAddr){
+        standard_metadata.egress_spec = CPU_PORT;
+        hdr.ethernet.dstAddr = swAddr;
+        hdr.packet_in.setValid();
+        hdr.packet_in.sport = hdr.lldp.port;
+        hdr.packet_in.dport = standard_metadata.ingress_port;
+    }
+
+    table pkt_in_table{
+        key = {
+            hdr.ethernet.etherType: exact;
+        }
+        actions = {
+            send_to_cpu;
+            NoAction;
+        }
+        size = 1024;
+        default_action = NoAction;
+    }
+    
+    action lldp_forward(macAddr_t swAddr){
+        standard_metadata.egress_spec = hdr.packet_out.egress_port;
+        hdr.ethernet.setValid();
+        hdr.lldp.setValid();
+        hdr.ethernet.etherType = TYPE_LLDP;
+        hdr.ethernet.srcAddr = swAddr;
+        hdr.lldp.port = hdr.packet_out.egress_port;
+    }
+
+    action response_to_cpu(macAddr_t swAddr){
+        standard_metadata.egress_spec = CPU_PORT;
+        hdr.ethernet.setValid();
+        hdr.ethernet.srcAddr = swAddr;
+    }
+
+    table pkt_out_table{
+        key = {
+            hdr.packet_out.padding: exact;
+        }
+        actions = {
+            lldp_forward;
+            response_to_cpu;
+            NoAction;
+        }
+        size = 1024;
+        default_action = NoAction;
+    }
 
 
     
@@ -356,9 +440,8 @@ control MyIngress(inout headers hdr,
                     dropped.read(drop_tmp,0);
                     dropped.write(0,drop_tmp+1);
                 }
-
-                
             }
+            
             else if(hdr.udp.isValid()){
                 bit<32> tmp_totalpacket;
                 total_packet.read(tmp_totalpacket,0);
@@ -389,6 +472,7 @@ control MyIngress(inout headers hdr,
                 }
 
             }
+            
             else if (hdr.icmp.isValid()){
                 bit<32> tmp_totalpacket;
                 total_packet.read(tmp_totalpacket,0);
@@ -406,9 +490,17 @@ control MyIngress(inout headers hdr,
                     dropped.write(0,drop_tmp+1);
                 }
             }
-        }
-    }
-}
+            
+            else if (hdr.lldp.isValid()) {
+            	pkt_in_table.apply();
+            }
+            
+            else if (hdr.packet_out.isValid()) {
+            	pkt_out_table.apply();
+            }   
+        } /* if ipv4_valid*/
+    }  /* apply*/
+} /*ingression process*/
 
 /*************************************************************************
 ****************  E G R E S S   P R O C E S S I N G   *******************
@@ -458,6 +550,8 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.udp);
         packet.emit(hdr.tcp);
         packet.emit(hdr.dns);
+        packet.emit(hdr.lldp);
+        packet.emit(hdr.packet_in);
     }
 }
 

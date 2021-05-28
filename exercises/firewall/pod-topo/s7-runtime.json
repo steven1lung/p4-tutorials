@@ -29,6 +29,22 @@
       "action_params":{ }
     },
     {
+      "table": "MyIngress.dns_table",
+      "match": {
+        "hdr.dns.dqr": 0
+      },
+      "action_name" : "MyIngress.dns_question",
+      "action_params":{ }
+    },
+    {
+      "table": "MyIngress.dns_table",
+      "match": {
+        "hdr.dns.dqr": 1
+      },
+      "action_name" : "MyIngress.dns_answer",
+      "action_params":{ }
+    },
+    {
       "table": "MyIngress.ipv4_lpm",
       "default_action": true,
       "action_name": "MyIngress.drop",
@@ -37,13 +53,14 @@
     {
       "table": "MyIngress.ipv4_lpm",
       "match": {
-        "hdr.ipv4.dstAddr": ["10.0.3.3", 32]
+        "hdr.ipv4.dstAddr": ["10.0.7.7", 32]
       },
       "action_name": "MyIngress.ipv4_forward",
       "action_params": {
-        "dstAddr": "08:00:00:00:01:33",
+        "dstAddr": "08:00:00:00:07:77",
         "port": 1
       }
     }
   ]
 }
+

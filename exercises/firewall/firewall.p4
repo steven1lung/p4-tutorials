@@ -235,6 +235,9 @@ control MyIngress(inout headers hdr,
   
     
     action drop() {
+        bit<32> drop_tmp;
+        dropped.read(drop_tmp,0);
+        dropped.write(0,drop_tmp+1);
         mark_to_drop(standard_metadata);
     }
 
@@ -419,9 +422,7 @@ control MyIngress(inout headers hdr,
                 synack_counter.read(tmp_synack,0);
                 if(tmp_synack>tmp_limit){
                     drop();
-                    bit<32> drop_tmp;
-                    dropped.read(drop_tmp,0);
-                    dropped.write(0,drop_tmp+1);
+                  
                 }
 
 
@@ -436,9 +437,7 @@ control MyIngress(inout headers hdr,
                 syn_counter.read(tmp_syn,0);
                 if(tmp_syn-tmp_ack > tmp_limit){
                     drop();
-                    bit<32> drop_tmp;
-                    dropped.read(drop_tmp,0);
-                    dropped.write(0,drop_tmp+1);
+
                 }
             }
             
@@ -452,9 +451,7 @@ control MyIngress(inout headers hdr,
                 dns_count.read(tmp_dns,0);
                 if(tmp_dns<=0){
                     drop();
-                    bit<32> drop_tmp;
-                    dropped.read(drop_tmp,0);
-                    dropped.write(0,drop_tmp+1);
+
                 }
 
                 //UDP Flood
@@ -466,9 +463,7 @@ control MyIngress(inout headers hdr,
                 udp_counter.read(tmp_udp,0);
                 if(tmp_udp>tmp_udp_limit){
                     drop();
-                    bit<32> drop_tmp;
-                    dropped.read(drop_tmp,0);
-                    dropped.write(0,drop_tmp+1);
+       
                 }
 
             }
@@ -485,9 +480,7 @@ control MyIngress(inout headers hdr,
                 icmp_counter.read(tmp_icmp,0);
                 if(tmp_icmp>tmp_icmp_limit){
                     drop();
-                    bit<32> drop_tmp;
-                    dropped.read(drop_tmp,0);
-                    dropped.write(0,drop_tmp+1);
+           
                 }
             }
             

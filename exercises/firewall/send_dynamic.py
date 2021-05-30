@@ -23,11 +23,11 @@ def get_if():
 
 def main():
 
-    if len(sys.argv)<2:
+    if len(sys.argv)<1:
         print('pass 1 arguments: <destination>')
         exit(1)
 
-    addr = socket.gethostbyname(sys.argv[1])
+    addr = socket.gethostbyname("10.0.1.1")
     iface = get_if()
 
     print(("sending on interface %s to %s" % (iface, str(addr))))
@@ -37,6 +37,8 @@ def main():
     pkt_tcp = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / "attack"
     pkt_icmp = pkt /IP(dst=addr) / ICMP(type=0) / "attack"
     for pac in range(1000):
+        # 20 packets per sec
+        # 60 packets per sec
         sendp(pkt_dns, iface=iface, verbose=False)
         sendp(pkt_udp, iface=iface, verbose=False)
         sendp(pkt_tcp, iface=iface, verbose=False)

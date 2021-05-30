@@ -219,7 +219,7 @@ def main(p4info_file_path, bmv2_file_path):
         run2=runtime_CLI.RuntimeAPI(2,standard_client,mc_client)
 
 
-        run.do_register_write("limit 0 5")
+        run.do_register_write("limit 0 5000000")
 
         
             
@@ -236,7 +236,7 @@ def main(p4info_file_path, bmv2_file_path):
             run.do_register_read("total_packet 0")
             print("total packets dropped : ",end="")
             run.do_register_read("dropped 0")
-            print("time slice packet accepted : ")
+            print("time slice packet accepted (5 seconds) : ")
             print("\tTCP packets : ",end="")
             run.do_register_read("syn_counter 0")
             print("\tUDP packets : ",end="")
@@ -251,9 +251,7 @@ def main(p4info_file_path, bmv2_file_path):
                 run.do_register_reset("udp_counter")
                 run.do_register_reset("icmp_counter")
                 run.do_register_reset("synack_counter")
-                #run.do_register_write("syn_counter 0 100")
-            if(time==3600):
-                run.do_register_reset("dns_query 0")
+                run.do_register_reset("dns_count")
 
             print("\n")
             time+=5

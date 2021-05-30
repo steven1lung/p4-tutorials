@@ -23,8 +23,8 @@ def get_if():
 
 def main():
 
-    if len(sys.argv)<3:
-        print('pass 2 arguments: <destination> "<message>"')
+    if len(sys.argv)<2:
+        print('pass 1 arguments: <destination>')
         exit(1)
 
     addr = socket.gethostbyname(sys.argv[1])

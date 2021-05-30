@@ -1,33 +1,8 @@
  {
   "target": "bmv2",
-  "p4info": "build/firewall.p4.p4info.txt",
-  "bmv2_json": "build/firewall.json",
+  "p4info": "build/basic.p4.p4info.txt",
+  "bmv2_json": "build/basic.json",
   "table_entries": [
-    {
-      "table": "MyIngress.count_syn",
-      "match": {
-        "hdr.tcp.syn": 1
-      },
-      "action_name" : "MyIngress.update_syn",
-      "action_params":{ }
-    },
-    {
-      "table": "MyIngress.count_ack",
-      "match": {
-        "hdr.tcp.ack": 1
-      },
-      "action_name" : "MyIngress.update_ack",
-      "action_params":{ }
-    },
-    {
-      "table": "MyIngress.count_synack",
-      "match": {
-        "hdr.tcp.ack": 1,
-        "hdr.tcp.syn": 1
-      },
-      "action_name" : "MyIngress.update_synack",
-      "action_params":{ }
-    },
     {
       "table": "MyIngress.ipv4_lpm",
       "default_action": true,

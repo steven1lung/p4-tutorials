@@ -39,7 +39,7 @@ def handle_pkt(pkt):
         #pkt.show2()
     #    hexdump(pkt)
         #if(not cmp(pkt.load,"b\'hello\'")):
-        pkt.show2()
+        #pkt.show2()
         #print(pkt.load)
         #print("b\'hello\'")
         sys.stdout.flush()

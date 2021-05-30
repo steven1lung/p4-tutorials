@@ -219,7 +219,7 @@ def main(p4info_file_path, bmv2_file_path):
         run2=runtime_CLI.RuntimeAPI(2,standard_client,mc_client)
 
 
-        run.do_register_write("limit 0 5")
+        run.do_register_write("limit 0 100")
 
         
             

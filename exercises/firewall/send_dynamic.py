@@ -34,14 +34,16 @@ def main():
     pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
     pkt_dns = pkt / IP(dst=addr) / UDP(dport=53) / DNS(id = 111,qr = 0,opcode = 0,rd = 1) / "attack"
     pkt_udp = pkt / IP(dst=addr) / UDP(sport=53)/ "attack"
-    pkt_tcp = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / "attack"
+    pkt_syn = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535),flags=2 ) / "attack"
+    pkt_syn_ack = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535),ack=1,flags=2 ) / "attack"
     pkt_icmp = pkt /IP(dst=addr) / ICMP(type=0) / "attack"
-    for pac in range(1000):
+    for pac in range(100000):
         # 20 packets per sec
-        # 60 packets per sec
+        # 80 packets per sec
         sendp(pkt_dns, iface=iface, verbose=False)
         sendp(pkt_udp, iface=iface, verbose=False)
-        sendp(pkt_tcp, iface=iface, verbose=False)
+        sendp(pkt_syn, iface=iface, verbose=False)
+        sendp(pkt_syn_ack, iface=iface, verbose=False)
     #pkt.show2()
     #sendp(pkt, iface=iface, verbose=False)
 

@@ -1,7 +1,7 @@
 {
   "target": "bmv2",
-  "p4info": "build/basic.p4.p4info.txt",
-  "bmv2_json": "build/basic.json",
+  "p4info": "build/firewall.p4.p4info.txt",
+  "bmv2_json": "build/firewall.json",
   "table_entries": [
     {
       "table": "MyIngress.ipv4_lpm",
@@ -120,7 +120,7 @@
       },
       "action_name": "MyIngress.ipv4_forward",
       "action_params": {
-        "dstAddr": "08:00:00:00:11:1111",
+        "dstAddr": "08:00:00:00:11:11",
         "port": 11
       }
     }
